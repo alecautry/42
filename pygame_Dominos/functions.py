@@ -73,6 +73,7 @@ def trickWinner(dlead, d2, d3, d4):
                 return d3
         #If only d2 and dlead match
         elif dlead > d2:
+        
             return dlead
         
         else:
