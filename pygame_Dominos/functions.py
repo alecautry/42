@@ -80,7 +80,7 @@ def trickWinner(dlead, d2, d3, d4):
             return d2
  
     #if d2 doesn't match
-    elif (dlead_high == (d3 & high) and (dlead_high == (d3 & low)): # If dlead mathces d3
+    elif (dlead_high == (d3 & high) and (dlead_high == (d3 & low))): # If dlead mathces d3
         if dlead_high == (d4 & high) and (dlead_high == (d4 & low)): # if dlead matched d4
             if dlead > d3 and (dlead > d4): # compare higher
                 return dlead

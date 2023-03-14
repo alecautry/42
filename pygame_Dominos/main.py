@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+from functions import * # This will import all functions defined in "functions.py"
 # Initialize the constructor
 pygame.init()
 
