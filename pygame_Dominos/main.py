@@ -30,7 +30,7 @@ text = smallfont.render('quit', True, color)
 # Title of Canvas
 pygame.display.set_caption("My Table")
 
-image = pygame.image.load("table.png")
+image = pygame.image.load("..\\table.png")
 
 
 
