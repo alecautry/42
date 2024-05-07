@@ -1,5 +1,6 @@
 # Functions file to handle Trick winnings or anything else
 # Pass in 4 dominos, starting with the lead, and the last 
+from dominoObject import *
 def trickWinner(dlead, d2, d3, d4):
     # Compare Dominos
 
@@ -110,3 +111,140 @@ def trickWinner(dlead, d2, d3, d4):
     else:
         return dlead 
     
+
+def setTrump(dominoArray, trump):
+    for each in dominoArray:
+        if(each.highSide == trump or (each.lowSide == trump)):
+            each.isTrump = True
+        
+#this will return 1, 2, or 3. Which ever is the highest
+
+def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
+    if(intOne > intTwo):
+        if(intOne > intThree):
+            if(intOne > intFour):
+                return 1
+            else:
+                return 4
+        elif(intThree > intFour):
+            return 3
+        else:
+            return 4
+    elif(intTwo > intThree):
+        if(intTwo > intFour):
+            return 2
+        else:
+            return 4
+    elif(intThree > intFour):
+        return 3
+    else:
+        return 4
+
+def compareThree(intOne: int, intTwo: int, intThree: int) -> int:
+    if( intOne > intTwo):
+        if(intOne > intThree):
+            return 1
+        else:
+            return 3
+    elif (intTwo > intThree):
+        return 2
+    else:
+        return 3
+
+#this will return 1 or 2. Which ever is highest
+def compareTwo(intOne: int, intTwo: int) -> int:
+    if (intOne > intTwo):
+        return 1
+    else:
+        return 2
+#return the int of who wins (1, 2, 3, 4)
+def trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
+    dlead = d1
+
+    if(d1.isTrump & d1.isDouble):
+        return 1
+    elif(d2.isTrump & d2.isDouble):
+        return 2
+    elif(d3.isTrump & d3.isDouble):
+        return 3
+    elif(d4.isTrump & d4.isDouble):
+        return 4
+
+    #if all trump compare ID
+    if(d1.isTrump and d2.isTrump and d3.isTrump and d4.isTrump):
+        return compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
+    #if d4 isn't trump
+    elif(d1.isTrump and d2.isTrump and d3.isTrump):
+        return compareThree(d1.ID, d2.ID, d3.ID)
+    #if d3 isn't trump
+    elif(d1.isTrump and d2.isTrump and d4.isTrump):
+        return compareFour(d1.ID, d2.ID, -1, d4.ID)
+    #if d2 isn't trump
+    elif(d1.isTrump and d3.isTrump and d4.isTrump):
+        return compareFour(d1.ID, -1, d3.ID, d4.ID)
+    #if d1 isn't trump
+    elif(d2.isTrump and d3.isTrump and d4.isTrump):
+        return compareFour(-1, d2.ID, d3.ID, d4.ID)
+    #if d1 and d2
+    elif(d1.isTrump and d2.isTrump):
+        return compareTwo(d1.ID, d2.ID)
+    #if d1 and d3
+    elif(d1.isTrump and d3.isTrump):
+        return compareThree(d1.ID , -1, d3.ID)
+    #if d1 and d4
+    elif(d1.isTrump and d4.isTrump):
+        return compareFour(d1.ID, -1,-1, d4.ID)
+    #if d2 and d3
+    elif(d2.isTrump and d3.isTrump):
+        return compareFour(-1,d2.ID,d3.ID,-1)
+    #if d2 and d4
+    elif(d2.isTrump and d4.isTrump):
+        return compareFour(-1,d2.ID,-1,d4.ID)
+    #if d3 and d4
+    elif(d3.isTrump and d4.isTrump):
+        return compareFour(-1,-1,d3.ID,d4.isTrump)
+    elif(d1.isTrump):
+        return 1
+    elif(d2.isTrump):
+        return 2
+    elif(d3.isTrump):
+        return 3
+    elif(d4.isTrump):
+        return 4
+
+    # At this point we have no Trump
+    # d1 is always lead
+    if(d1.isDouble):
+        return 1
+    # if d2 is a double and matches the high side of d2 lead it is the highest double 
+    elif d2.isDouble and (d2.highSide == d1.highSide): 
+        return 2
+    elif d3.isDouble and (d3.highSide == d1.highSide):
+        return 3
+    elif d4.isDouble and (d4.highSide == d1.highSide):
+        return 4
+    
+    # No doubles matching Lead suit
+    # Compare highside and ID
+    if((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
+        return compareFour(d1.ID, d2.ID, d3.ID, d4.ID) 
+    #now compare 3
+    # if 1, 2, and 3 have highside but not 4
+    elif((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide)):
+        return compareFour(d1.ID, d2.ID, d3.ID, -1) 
+    # if 1, 2, and 4 have highside but not 3
+    elif((d2.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
+        return compareFour(d1.ID, d2.ID, -1, d4.ID) 
+    # if 1 and 2 but not 3 and 4
+    elif(d2.highSide == d1.highSide):
+        return compareFour(d1.ID, d2.ID, -1, -1)
+    # if 1 and 3 but not 2 and 4
+    elif(d3.highSide == d1.highSide):
+        return compareFour(d1.ID, -1, d3.ID, -1)
+    # if 1 and 4 but not 2 and 3
+    elif(d4.highSide == d1.highSide):
+        return compareFour(d1.ID, -1, -1, d4.ID)
+    
+    # I think this is everything?
+    # if nothing matches, return 1
+    return 1
