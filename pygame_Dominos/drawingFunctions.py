@@ -1,4 +1,9 @@
 import pygame
+
+GREEN = (0, 128, 0)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
 def drawGridIron(passScreen):
     # color as a tuple
     green = (0,255,0)
@@ -32,3 +37,19 @@ def drawButton2(buttonScreen, gameMouse,x, y, buttonWidth, buttonHeight, buttonC
           
     else: 
         pygame.draw.rect(buttonScreen,buttonDark,[x,y,buttonWidth,buttonHeight])
+    
+
+def draw_domino(screen, x, y, number1, number2):
+    pygame.draw.rect(screen, BLACK, (x, y, 50, 100), 2)  # Domino border
+    pygame.draw.line(screen, BLACK, (x, y + 50), (x + 50, y + 50), 2)  # Center line
+    font = pygame.font.SysFont(None, 24)
+    text1 = font.render(str(number1), True, BLACK)
+    text2 = font.render(str(number2), True, BLACK)
+    screen.blit(text1, (x + 15, y + 15))
+    screen.blit(text2, (x + 15, y + 65))
+
+def draw_text(window, text, x, y, size=24, color=BLACK):
+    font = pygame.font.SysFont(None, size)
+    render_text = font.render(text, True, color)
+    window.blit(render_text, (x, y))
+    
