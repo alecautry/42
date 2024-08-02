@@ -66,16 +66,22 @@ startingPlayer = random.randrange(1, 5)
 # assign dominos to each players hands (Deal)
 dealHands(humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4, allDominos)
 
+allHands = [humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4]
+
 # Draw hands
 # draw_Player_Dominos(humanPlayer)
 # Bidding (Determine likely bid for each computer hand, add a prompt for player (Use graphics!))
 winningBid = (0,0)
-winningBid = askForBids(startingPlayer)
 
+
+winningBid = askForBids(startingPlayer, allHands)
 
 # Winner Sets Trump
 
+
+
 # Winner plays first domino (Have the computer players play first legal domino)
+
 # show each Domino on the board (Some kind of turned based animation)
 
 # wait for player to pick one (Myabe highlight what is legal)

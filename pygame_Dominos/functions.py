@@ -259,17 +259,42 @@ def trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
     return 1
 
 
-def askComputerBid(currentComputer)->int:
+def askComputerBid(computerHand, currentMaxBid, tablePosition)->int:
+    # Look at dominos
+    # do fancy look up
+    # determine possible bid
+    # compare value to current vid
+    suits = [0,0,0,0,0,0,0]
+    # loop through each suit and determine how many of each you have
+    for x in range(7):
+        if(computerHand[x].lowSide == 0):
+            suits[0] += 1
+        elif(computerHand[x].lowSide == 1 or computerHand[x].highSide == 1):
+            suits[1] += 1
+        elif(computerHand[x].lowSide == 2 or computerHand[x].highSide == 2):
+            suits[2] += 1
+        elif(computerHand[x].lowSide == 3 or computerHand[x].highSide == 3):
+            suits[3] += 1
+        elif(computerHand[x].lowSide == 4 or computerHand[x].highSide == 4):
+            suits[4] += 1
+        elif(computerHand[x].lowSide == 5 or computerHand[x].highSide == 5):
+            suits[5] += 1
+        elif(computerHand[x].lowSide == 6 or computerHand[x].highSide == 6):
+            suits[6] += 1
+    print(suits)
 
     return 0
 
 
-def askHumanBid()->int:
+def askHumanBid(humanHand, currentMaxBid)->int:
+    # create a pop up
+    # ask for a number above 29 or current max mid else pass
 
     return 0
 
-def askForBids(startingPlayer) -> list:
-    currentWinner = [0,0]
+def askForBids(startingPlayer, allHands) -> list:
+    
+    currentWinner = [0,0] # [bidAmount, playerNum]
     currentBid = 0
     currentPlayer = startingPlayer
     # loop 4 times for all players
@@ -280,10 +305,10 @@ def askForBids(startingPlayer) -> list:
         
         # if 2,3,4 its computer
         if(currentPlayer != 1):
-            currentBid = askComputerBid(x)
+            currentBid = askComputerBid(allHands[currentPlayer - 1], currentWinner[0], x)
         # if 1, its human
         else:
-            currentBid = askHumanBid()
+            currentBid = askHumanBid(allHands[0], currentWinner[0])
 
         #if the bid is better, then they win
         if(currentBid > currentWinner[0]):
