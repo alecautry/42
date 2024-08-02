@@ -1,3 +1,4 @@
+from dominoObject import *
 from functions import *
 import array as ar
 from itertools import *

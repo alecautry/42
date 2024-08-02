@@ -117,8 +117,17 @@ def setTrump(dominoArray, trump):
         if(each.highSide == trump or (each.lowSide == trump)):
             each.isTrump = True
         
-#this will return 1, 2, or 3. Which ever is the highest
+def dealHands(humanPlayer, computerPlayer1, computerPlayer2, computerPlayer3, shuffledDominos):
+    for x in range(7):
+        humanPlayer[x] = shuffledDominos[x]
+        computerPlayer1[x] = shuffledDominos[x+7]
+        computerPlayer2[x] = shuffledDominos[x+14]
+        computerPlayer3[x] = shuffledDominos[x+21]
 
+
+
+
+#this will return 1, 2, or 3. Which ever is the highest
 def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
     if(intOne > intTwo):
         if(intOne > intThree):
@@ -248,3 +257,41 @@ def trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
     # I think this is everything?
     # if nothing matches, return 1
     return 1
+
+
+def askComputerBid(currentComputer)->int:
+
+    return 0
+
+
+def askHumanBid()->int:
+
+    return 0
+
+def askForBids(startingPlayer) -> list:
+    currentWinner = [0,0]
+    currentBid = 0
+    currentPlayer = startingPlayer
+    # loop 4 times for all players
+    for x in range(4):
+        # reset starting player # for roll over
+        if(currentPlayer == 5):
+           currentPlayer = 1
+        
+        # if 2,3,4 its computer
+        if(currentPlayer != 1):
+            currentBid = askComputerBid(x)
+        # if 1, its human
+        else:
+            currentBid = askHumanBid()
+
+        #if the bid is better, then they win
+        if(currentBid > currentWinner[0]):
+                currentWinner[0] = currentBid
+                currentWinner[1] = currentPlayer
+        
+        currentPlayer+=1
+        currentBid = 0
+
+
+    return currentWinner
