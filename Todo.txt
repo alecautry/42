@@ -1,0 +1,33 @@
+Game Logic (State Machines)
+
+
+Main Menu
+ - First 
+
+Setup
+ - Shuffle Dominos
+ - Deal Dominos
+ - Determine First Shufflerb
+ - 
+
+ Bid
+ - Ask Each Player
+ - Computer determines whats best bid 
+ - Create pop up for human
+ 
+ - Determine winner
+
+
+
+
+
+Play-the-Game
+ - Winner goes First
+ - Computer Plays
+ - Trick Winner Determined
+ - Tricks are saved somewhere
+ - Next person goes
+
+
+
+

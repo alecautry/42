@@ -1,6 +1,7 @@
 # Functions file to handle Trick winnings or anything else
 # Pass in 4 dominos, starting with the lead, and the last 
 from dominoObject import *
+from drawingFunctions import *
 def trickWinner(dlead, d2, d3, d4):
     # Compare Dominos
 
@@ -269,31 +270,36 @@ def askComputerBid(computerHand, currentMaxBid, tablePosition)->int:
     for x in range(7):
         if(computerHand[x].lowSide == 0):
             suits[0] += 1
-        elif(computerHand[x].lowSide == 1 or computerHand[x].highSide == 1):
+        if(computerHand[x].lowSide == 1 or computerHand[x].highSide == 1):
             suits[1] += 1
-        elif(computerHand[x].lowSide == 2 or computerHand[x].highSide == 2):
+        if(computerHand[x].lowSide == 2 or computerHand[x].highSide == 2):
             suits[2] += 1
-        elif(computerHand[x].lowSide == 3 or computerHand[x].highSide == 3):
+        if(computerHand[x].lowSide == 3 or computerHand[x].highSide == 3):
             suits[3] += 1
-        elif(computerHand[x].lowSide == 4 or computerHand[x].highSide == 4):
+        if(computerHand[x].lowSide == 4 or computerHand[x].highSide == 4):
             suits[4] += 1
-        elif(computerHand[x].lowSide == 5 or computerHand[x].highSide == 5):
+        if(computerHand[x].lowSide == 5 or computerHand[x].highSide == 5):
             suits[5] += 1
-        elif(computerHand[x].lowSide == 6 or computerHand[x].highSide == 6):
+        if(computerHand[x].lowSide == 6 or computerHand[x].highSide == 6):
             suits[6] += 1
     print(suits)
 
     return 0
 
 
-def askHumanBid(humanHand, currentMaxBid)->int:
+def askHumanBid(screen, humanHand, currentMaxBid)->int:
     # create a pop up
+    asking = True
+    humanBid = 0
+    draw_Player_Bid(screen)
+    asking = False
     # ask for a number above 29 or current max mid else pass
 
-    return 0
+    return humanBid, asking
 
-def askForBids(startingPlayer, allHands) -> list:
+def askForBids(screen, startingPlayer, allHands) -> list:
     
+    asking = True
     currentWinner = [0,0] # [bidAmount, playerNum]
     currentBid = 0
     currentPlayer = startingPlayer
@@ -308,7 +314,8 @@ def askForBids(startingPlayer, allHands) -> list:
             currentBid = askComputerBid(allHands[currentPlayer - 1], currentWinner[0], x)
         # if 1, its human
         else:
-            currentBid = askHumanBid(allHands[0], currentWinner[0])
+            while(asking):
+                currentBid, asking = askHumanBid(screen, allHands[0], currentWinner[0])
 
         #if the bid is better, then they win
         if(currentBid > currentWinner[0]):

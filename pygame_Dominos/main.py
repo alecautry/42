@@ -53,40 +53,7 @@ humanPlayer = [0,0,0,0,0,0,0]
 
 
 
-# use this funciton to set trump
-setTrump(allDominos, trump)
 
-# use this to shuffle the dominos
-random.shuffle(allDominos)
-
-# randomly determine who starts(player 1 is Human)
-
-startingPlayer = random.randrange(1, 5)
-
-# assign dominos to each players hands (Deal)
-dealHands(humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4, allDominos)
-
-allHands = [humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4]
-
-# Draw hands
-# draw_Player_Dominos(humanPlayer)
-# Bidding (Determine likely bid for each computer hand, add a prompt for player (Use graphics!))
-winningBid = (0,0)
-
-
-winningBid = askForBids(startingPlayer, allHands)
-
-# Winner Sets Trump
-
-
-
-# Winner plays first domino (Have the computer players play first legal domino)
-
-# show each Domino on the board (Some kind of turned based animation)
-
-# wait for player to pick one (Myabe highlight what is legal)
-
-# 
 
 
 
@@ -125,6 +92,58 @@ smallfont = pygame.font.SysFont('Corbel',35)
 # rendering a text written in 
 # this font 
 quitText = smallfont.render('quit' , True , color) 
+
+# use this funciton to set trump
+setTrump(allDominos, trump)
+
+# use this to shuffle the dominos
+random.shuffle(allDominos)
+
+# randomly determine who starts(player 1 is Human)
+
+startingPlayer = random.randrange(1, 5)
+
+# assign dominos to each players hands (Deal)
+dealHands(humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4, allDominos)
+
+allHands = [humanPlayer, computerPlayer2, computerPlayer3, computerPlayer4]
+
+# Draw hands
+# draw_Player_Dominos(humanPlayer)
+# Bidding (Determine likely bid for each computer hand, add a prompt for player (Use graphics!))
+winningBid_Player = [0,0]
+for x in range(len(computerPlayer2)):
+    print(str(computerPlayer2[x].highSide) + "/" + str(computerPlayer2[x].lowSide))
+    #print("/")
+    #print(computerPlayer2[x].lowSide)
+winningBid_Player = askForBids(screen, startingPlayer, allHands)
+
+# Winner Sets Trump
+
+print(winningBid_Player)
+
+
+# Winner plays first domino (Have the computer players play first legal domino)
+
+# show each Domino on the board (Some kind of turned based animation)
+
+# wait for player to pick one (Myabe highlight what is legal)
+
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def drawButton():
@@ -188,7 +207,7 @@ while running:
     draw_text(screen, "Player 3 Score: 12", 700, 620)
     draw_text(screen, "Player 4 Score: 7", 20, 620)
 
-
+    draw_Player_Bid(screen)
 
     # if mouse is hovered on a button it 
     # changes to lighter shade  
