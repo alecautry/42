@@ -111,21 +111,6 @@ def trickWinner(dlead, d2, d3, d4):
     # If nothing matches dlead then it walks (Wins) 
     else:
         return dlead 
-    
-
-def setTrump(dominoArray, trump):
-    for each in dominoArray:
-        if(each.highSide == trump or (each.lowSide == trump)):
-            each.isTrump = True
-        
-def dealHands(humanPlayer, computerPlayer1, computerPlayer2, computerPlayer3, shuffledDominos):
-    for x in range(7):
-        humanPlayer[x] = shuffledDominos[x]
-        computerPlayer1[x] = shuffledDominos[x+7]
-        computerPlayer2[x] = shuffledDominos[x+14]
-        computerPlayer3[x] = shuffledDominos[x+21]
-
-
 
 
 #this will return 1, 2, or 3. Which ever is the highest
@@ -286,7 +271,6 @@ def askComputerBid(computerHand, currentMaxBid, tablePosition)->int:
 
     return 0
 
-
 def askHumanBid(screen, humanHand, currentMaxBid)->int:
     # create a pop up
     asking = True
@@ -327,3 +311,15 @@ def askForBids(screen, startingPlayer, allHands) -> list:
 
 
     return currentWinner
+
+def setTrump(dominoArray, trump):
+    for each in dominoArray:
+        if(each.highSide == trump or (each.lowSide == trump)):
+            each.isTrump = True
+        
+def dealHands(humanPlayer, computerPlayer1, computerPlayer2, computerPlayer3, shuffledDominos):
+    for x in range(7):
+        humanPlayer[x] = shuffledDominos[x]
+        computerPlayer1[x] = shuffledDominos[x+7]
+        computerPlayer2[x] = shuffledDominos[x+14]
+        computerPlayer3[x] = shuffledDominos[x+21]
