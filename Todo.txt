@@ -18,9 +18,6 @@ Setup
  - Determine winner
 
 
-
-
-
 Play-the-Game
  - Winner goes First
  - Computer Plays

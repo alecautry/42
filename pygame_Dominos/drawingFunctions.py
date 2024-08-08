@@ -29,14 +29,19 @@ def drawGridIron(passScreen):
     pygame.draw.rect(passScreen, (0,0,0),[x_cord, y_cord, width, length], 5)
 
 
-
-def drawButton2(buttonScreen, gameMouse,x, y, buttonWidth, buttonHeight, buttonColor):
+def drawButton2(buttonScreen, gameMouse,x, y, buttonWidth, buttonHeight, buttonColor, event):
     buttonDark = (buttonColor[0]*0.8, buttonColor[1]*0.8, buttonColor[2]*0.8)
+    if(buttonColor[0] == 0 and buttonColor[1] == 0 and buttonColor[2] == 0):
+        buttonColor = (100,100,100)
+        buttonDark = (0, 0, 0)
     if x <= gameMouse[0] <= x+buttonWidth and y <= gameMouse[1] <= y+buttonHeight: 
         pygame.draw.rect(buttonScreen,buttonColor,[x,y,buttonWidth,buttonHeight]) 
+        if(event):
+            return 1
           
     else: 
         pygame.draw.rect(buttonScreen,buttonDark,[x,y,buttonWidth,buttonHeight])
+        return 0
     
 
 def draw_domino(screen, x, y, number1, number2):

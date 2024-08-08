@@ -176,8 +176,8 @@ while running:
     # stores the (x,y) coordinates into 
     # the variable as a tuple 
     mouse = pygame.mouse.get_pos() 
-      
-
+    drawButton()
+    drawButton2(screen, mouse, 100, 100, 100, 100, GREEN)
     ## CHATGPT Help
     # Draw player areas based on the image
     pygame.draw.rect(screen, WHITE, (20, 70, 100, 550))   # Left player hand
@@ -207,14 +207,14 @@ while running:
     draw_text(screen, "Player 3 Score: 12", 700, 620)
     draw_text(screen, "Player 4 Score: 7", 20, 620)
 
-    draw_Player_Bid(screen)
+    #draw_Player_Bid(screen)
 
     # if mouse is hovered on a button it 
     # changes to lighter shade  
     #drawButton2(screen, mouse, 2, 2, 100, 50, (150,210,200))
     # superimposing the text onto our button 
     #screen.blit(quitText , (width/2+50,height/2)) 
-    
+    pygame.display.update()
     # updates the frames of the game 
     pygame.display.flip()
 
