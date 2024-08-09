@@ -1,28 +1,10 @@
 # This is a global class for a StateMachine
-# The MIT License
 
-# Copyright (c) 2014 - 2020 Tal Yarkoni, Alexander Neumann
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 import pygame
 from transitions import Machine
-from functions import *
+#from functions import *
+from drawingFunctions import *
+from dominoObject import *
 import time
 import random
 
@@ -132,7 +114,7 @@ class THE_GAME(object):
         # Global States
         self.Machine.add_transition('mainMenu','*','MainMenu')
 
-
+    # State Functions
     def create_mainMenu(self):
         startGame = -1
         quitGame = 0
@@ -162,10 +144,66 @@ class THE_GAME(object):
             self.computer4Hand[x] = self.shuffledDominos[x+21]
         return True
 
+    # Helper functions
+    def askComputerBid(self, computerHand, curerntWinner):
+        # Look at dominos
+        # do fancy look up
+        # determine possible bid
+        # compare value to current vid
+        suits = [0,0,0,0,0,0,0]
+        # loop through each suit and determine how many of each you have
+        for x in range(7):
+            if(computerHand[x].lowSide == 0):
+                suits[0] += 1
+            if(computerHand[x].lowSide == 1 or computerHand[x].highSide == 1):
+                suits[1] += 1
+            if(computerHand[x].lowSide == 2 or computerHand[x].highSide == 2):
+                suits[2] += 1
+            if(computerHand[x].lowSide == 3 or computerHand[x].highSide == 3):
+                suits[3] += 1
+            if(computerHand[x].lowSide == 4 or computerHand[x].highSide == 4):
+                suits[4] += 1
+            if(computerHand[x].lowSide == 5 or computerHand[x].highSide == 5):
+                suits[5] += 1
+            if(computerHand[x].lowSide == 6 or computerHand[x].highSide == 6):
+                suits[6] += 1
+        print(suits)
+
+    def askHumanBid(self):
+        print("here")
     
+
     def ask_for_bids(self): # TODO move the ask for bids function here. Instead of returns, update local class members
-        askForBids(self.screen, )
-        return 99
+        asking = True
+        currentWinner = [0,0] # [bidAmount, playerNum]
+        currentBid = 0
+        currentPlayer = self.startingPlayer
+        allHands = [self.player1Hand, self.computer2Hand, self.computer3Hand, self.computer4Hand]
+        # loop 4 times for all players
+        for x in range(4):
+            # reset starting player # for roll over
+            if(currentPlayer == 5):
+                currentPlayer = 1
+        
+            # if 2,3,4 its computer
+            if(currentPlayer != 1):
+                currentBid = THE_GAME.askComputerBid(allHands[currentPlayer], currentWinner[0])
+            # if 1, its human
+            else:
+                while(asking):
+                    currentBid, asking = THE_GAME.askHumanBid(allHands[0], currentWinner[0])
+
+            #if the bid is better, then they win
+            if(currentBid > currentWinner[0]):
+                currentWinner[0] = currentBid
+                currentWinner[1] = currentPlayer
+        
+            currentPlayer+=1
+            currentBid = 0
+
+
+        return currentWinner
+
     
     def start_playing_dominos(self):
         print("Playing a doimino [4|4]")
@@ -174,6 +212,9 @@ class THE_GAME(object):
     def game_is_over(self):
         print("The human wins!")
         return 99
+
+    
+
 
     # pygame functions
     def updatePygame(self):
