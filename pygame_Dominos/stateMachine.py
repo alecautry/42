@@ -45,7 +45,7 @@ class THE_GAME(object):
     allDominoIDs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
     allDominos = [d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27,d27]
     # define the states
-    states = ['MainMenu', 'Setup', 'Bidding', 'PlayGame','GameOver', 'Quit']
+    states = ['MainMenu','InGameMenu', 'Setup', 'Bidding', 'SetTrump','PlayGame','GameOver', 'Quit']
     # screen resolution 
     res = (900,900) 
     
@@ -100,21 +100,24 @@ class THE_GAME(object):
 
         self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Setup',conditions=['create_mainMenu','getIsSetup'])
         self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Quit', conditions=['create_mainMenu','getIsQuit'])
-   
+
         # Setup leads to bidding
         self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding', before='ask_for_bids')
 
-        # Move from Bidding to Playing the game
-        self.Machine.add_transition('doneBidding','Bidding','PlayGame', after='start_playing_dominos')
+        # Set Trump after bidding commpletes TODO
+        self.Machine.add_transition('doneBidding','Bididng','SetTrump')
 
-        # Move from Playing the game to GameOver state
+        # Move from "SetTrump" to Playing the game TODO
+        self.Machine.add_transition('doneSettingTrump','SetTrump','PlayGame', after='start_playing_dominos')
+
+        # Move from Playing the game to GameOver state TODO
         self.Machine.add_transition('donePlaying','PlayGame', 'GameOver', after='game_is_over')
 
 
         # Global States
         self.Machine.add_transition('mainMenu','*','MainMenu')
 
-    # State Functions
+    # The Game State Functions
     def create_mainMenu(self):
         startGame = -1
         quitGame = 0
@@ -142,10 +145,10 @@ class THE_GAME(object):
             self.computer2Hand[x] = self.shuffledDominos[x+7]
             self.computer3Hand[x] = self.shuffledDominos[x+14]
             self.computer4Hand[x] = self.shuffledDominos[x+21]
-        return True
+
 
     # Helper functions
-    def askComputerBid(self, computerHand, curerntWinner):
+    def askComputerBid(self, computerHand, curerntWinner): # TODO
         # Look at dominos
         # do fancy look up
         # determine possible bid
@@ -168,11 +171,23 @@ class THE_GAME(object):
             if(computerHand[x].lowSide == 6 or computerHand[x].highSide == 6):
                 suits[6] += 1
         print(suits)
+        return 0
 
-    def askHumanBid(self):
-        print("here")
+    def askHumanBid(self): # TODO
+        # create a pop up
+        asking = True
+        humanBid = 0
+        draw_Player_Bid(screen)
+        asking = False
+        # ask for a number above 29 or current max mid else pass
+
+        return humanBid, asking
     
-
+    def setTrump(self): # TODO
+        for each in dominoArray:
+            if(each.highSide == trump or (each.lowSide == trump)):
+                each.isTrump = True
+        
     def ask_for_bids(self): # TODO move the ask for bids function here. Instead of returns, update local class members
         asking = True
         currentWinner = [0,0] # [bidAmount, playerNum]
@@ -204,9 +219,102 @@ class THE_GAME(object):
 
         return currentWinner
 
-    
+    def trickWinner(self): # TODO
+        #  trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
+        # dlead = d1
+
+        if(d1.isTrump & d1.isDouble):
+            return 1
+        elif(d2.isTrump & d2.isDouble):
+            return 2
+        elif(d3.isTrump & d3.isDouble):
+            return 3
+        elif(d4.isTrump & d4.isDouble):
+            return 4
+
+        #if all trump compare ID
+        if(d1.isTrump and d2.isTrump and d3.isTrump and d4.isTrump):
+            return compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
+        #if d4 isn't trump
+        elif(d1.isTrump and d2.isTrump and d3.isTrump):
+            return compareThree(d1.ID, d2.ID, d3.ID)
+        #if d3 isn't trump
+        elif(d1.isTrump and d2.isTrump and d4.isTrump):
+            return compareFour(d1.ID, d2.ID, -1, d4.ID)
+        #if d2 isn't trump
+        elif(d1.isTrump and d3.isTrump and d4.isTrump):
+            return compareFour(d1.ID, -1, d3.ID, d4.ID)
+        #if d1 isn't trump
+        elif(d2.isTrump and d3.isTrump and d4.isTrump):
+            return compareFour(-1, d2.ID, d3.ID, d4.ID)
+        #if d1 and d2
+        elif(d1.isTrump and d2.isTrump):
+            return compareTwo(d1.ID, d2.ID)
+        #if d1 and d3
+        elif(d1.isTrump and d3.isTrump):
+            return compareThree(d1.ID , -1, d3.ID)
+        #if d1 and d4
+        elif(d1.isTrump and d4.isTrump):
+            return compareFour(d1.ID, -1,-1, d4.ID)
+        #if d2 and d3
+        elif(d2.isTrump and d3.isTrump):
+            return compareFour(-1,d2.ID,d3.ID,-1)
+        #if d2 and d4
+        elif(d2.isTrump and d4.isTrump):
+            return compareFour(-1,d2.ID,-1,d4.ID)
+        #if d3 and d4
+        elif(d3.isTrump and d4.isTrump):
+            return compareFour(-1,-1,d3.ID,d4.isTrump)
+        elif(d1.isTrump):
+            return 1
+        elif(d2.isTrump):
+            return 2
+        elif(d3.isTrump):
+            return 3
+        elif(d4.isTrump):
+            return 4
+
+        # At this point we have no Trump
+        # d1 is always lead
+        if(d1.isDouble):
+            return 1
+        # if d2 is a double and matches the high side of d2 lead it is the highest double 
+        elif d2.isDouble and (d2.highSide == d1.highSide): 
+            return 2
+        elif d3.isDouble and (d3.highSide == d1.highSide):
+            return 3
+        elif d4.isDouble and (d4.highSide == d1.highSide):
+            return 4
+
+        # No doubles matching Lead suit
+        # Compare highside and ID
+        if((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
+            return compareFour(d1.ID, d2.ID, d3.ID, d4.ID) 
+        #now compare 3
+        # if 1, 2, and 3 have highside but not 4
+        elif((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide)):
+            return compareFour(d1.ID, d2.ID, d3.ID, -1) 
+        # if 1, 2, and 4 have highside but not 3
+        elif((d2.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
+            return compareFour(d1.ID, d2.ID, -1, d4.ID) 
+        # if 1 and 2 but not 3 and 4
+        elif(d2.highSide == d1.highSide):
+            return compareFour(d1.ID, d2.ID, -1, -1)
+        # if 1 and 3 but not 2 and 4
+        elif(d3.highSide == d1.highSide):
+            return compareFour(d1.ID, -1, d3.ID, -1)
+        # if 1 and 4 but not 2 and 3
+        elif(d4.highSide == d1.highSide):
+            return compareFour(d1.ID, -1, -1, d4.ID)
+
+        # I think this is everything?
+        # if nothing matches, return 1
+        return 1
+
+
     def start_playing_dominos(self):
-        print("Playing a doimino [4|4]")
+        # Bid Winner sets trump
+
         return 99
     
     def game_is_over(self):

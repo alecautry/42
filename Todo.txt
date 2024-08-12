@@ -1,29 +1,10 @@
-Game Logic (State Machines)
 
 
-Main Menu
- - First 
+Finish moving functions.py to stateMachine.py
 
-Setup
- - Shuffle Dominos
- - Deal Dominos
- - Determine First Shufflerb
- - 
+Move "main" code from stateMachine.py to main.py
 
- Bid
- - Ask Each Player
- - Computer determines whats best bid 
- - Create pop up for human
- 
- - Determine winner
-
-
-Play-the-Game
- - Winner goes First
- - Computer Plays
- - Trick Winner Determined
- - Tricks are saved somewhere
- - Next person goes
+clean up code
 
 
 
