@@ -147,7 +147,7 @@ class THE_GAME(object):
             self.computer4Hand[x] = self.shuffledDominos[x+21]
 
 
-    # Helper functions
+    # 0--- State Methods ---
     def askComputerBid(self, computerHand, curerntWinner): # TODO
         # Look at dominos
         # do fancy look up
@@ -311,6 +311,45 @@ class THE_GAME(object):
         # if nothing matches, return 1
         return 1
 
+    #this will return 1, 2, or 3. Which ever is the highest
+    def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
+        if(intOne > intTwo):
+            if(intOne > intThree):
+                if(intOne > intFour):
+                    return 1
+                else:
+                    return 4
+            elif(intThree > intFour):
+                return 3
+            else:
+                return 4
+        elif(intTwo > intThree):
+            if(intTwo > intFour):
+                return 2
+            else:
+                return 4
+        elif(intThree > intFour):
+            return 3
+        else:
+            return 4
+
+    def compareThree(intOne: int, intTwo: int, intThree: int) -> int:
+        if( intOne > intTwo):
+            if(intOne > intThree):
+                return 1
+            else:
+                return 3
+        elif (intTwo > intThree):
+            return 2
+        else:
+            return 3
+
+    #this will return 1 or 2. Which ever is highest
+    def compareTwo(intOne: int, intTwo: int) -> int:
+        if (intOne > intTwo):
+            return 1
+        else:
+            return 2
 
     def start_playing_dominos(self):
         # Bid Winner sets trump
@@ -324,7 +363,7 @@ class THE_GAME(object):
     
 
 
-    # pygame functions
+    # --- pygame functions ---
     def updatePygame(self):
         
         #static updates
