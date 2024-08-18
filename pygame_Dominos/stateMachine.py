@@ -58,7 +58,10 @@ class THE_GAME(object):
         self.team1Score = 0
         self.team2Score = 0
         self.Trump = -1
-           
+        self.player1Hand = [0,0,0,0,0,0,0]
+        self.computer2Hand= [0,0,0,0,0,0,0]
+        self.computer3Hand= [0,0,0,0,0,0,0]
+        self.computer4Hand= [0,0,0,0,0,0,0]
         for x in range(7):  # Each hand starts as the first 7 dominos
             self.player1Hand[x] = THE_GAME.allDominos[x]
             self.computer2Hand[x] = THE_GAME.allDominos[x+7]
@@ -102,7 +105,7 @@ class THE_GAME(object):
         self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Quit', conditions=['create_mainMenu','getIsQuit'])
 
         # Setup leads to bidding
-        self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding', before='ask_for_bids')
+        self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding', after='ask_for_bids')
 
         # Set Trump after bidding commpletes TODO
         self.Machine.add_transition('doneBidding','Bididng','SetTrump')
@@ -147,7 +150,7 @@ class THE_GAME(object):
             self.computer4Hand[x] = self.shuffledDominos[x+21]
 
 
-    # 0--- State Methods ---
+    # --- State Methods ---
     def askComputerBid(self, computerHand, curerntWinner): # TODO
         # Look at dominos
         # do fancy look up
@@ -173,17 +176,17 @@ class THE_GAME(object):
         print(suits)
         return 0
 
-    def askHumanBid(self): # TODO
+    def askHumanBid(self): # TODO - 
         # create a pop up
         asking = True
         humanBid = 0
-        draw_Player_Bid(screen)
+        draw_Player_Bid(self.screen)
         asking = False
         # ask for a number above 29 or current max mid else pass
 
         return humanBid, asking
     
-    def setTrump(self): # TODO
+    def setTrump(self, dominoArray, trump):
         for each in dominoArray:
             if(each.highSide == trump or (each.lowSide == trump)):
                 each.isTrump = True
@@ -202,11 +205,11 @@ class THE_GAME(object):
         
             # if 2,3,4 its computer
             if(currentPlayer != 1):
-                currentBid = THE_GAME.askComputerBid(allHands[currentPlayer], currentWinner[0])
+                currentBid = self.askComputerBid(allHands[currentPlayer], currentWinner[0])
             # if 1, its human
             else:
                 while(asking):
-                    currentBid, asking = THE_GAME.askHumanBid(allHands[0], currentWinner[0])
+                    currentBid, asking = self.askHumanBid(allHands[0], currentWinner[0])
 
             #if the bid is better, then they win
             if(currentBid > currentWinner[0]):
@@ -219,9 +222,47 @@ class THE_GAME(object):
 
         return currentWinner
 
-    def trickWinner(self): # TODO
+
+    #this will return 1, 2, or 3. Which ever is the highest
+    def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
+        if(intOne > intTwo):
+            if(intOne > intThree):
+                if(intOne > intFour):
+                    return 1
+                else:
+                    return 4
+            elif(intThree > intFour):
+                return 3
+            else:
+                return 4
+        elif(intTwo > intThree):
+            if(intTwo > intFour):
+                return 2
+            else:
+                return 4
+        elif(intThree > intFour):
+            return 3
+        else:
+            return 4
+
+    def compareThree(intOne: int, intTwo: int, intThree: int) -> int:
+        if( intOne > intTwo):
+            if(intOne > intThree):
+                return 1
+            else:
+                return 3
+        elif (intTwo > intThree):
+            return 2
+        else:
+            return 3
+
+    def trickWinner(self, theTrick): # TODO
         #  trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
         # dlead = d1
+        d1 = theTrick[0]
+        d2 = theTrick[1]
+        d3 = theTrick[2]
+        d4 = theTrick[3]
 
         if(d1.isTrump & d1.isDouble):
             return 1
@@ -234,37 +275,37 @@ class THE_GAME(object):
 
         #if all trump compare ID
         if(d1.isTrump and d2.isTrump and d3.isTrump and d4.isTrump):
-            return compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
+            return self.compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
         #if d4 isn't trump
         elif(d1.isTrump and d2.isTrump and d3.isTrump):
-            return compareThree(d1.ID, d2.ID, d3.ID)
+            return self.compareThree(d1.ID, d2.ID, d3.ID)
         #if d3 isn't trump
         elif(d1.isTrump and d2.isTrump and d4.isTrump):
-            return compareFour(d1.ID, d2.ID, -1, d4.ID)
+            return self.compareFour(d1.ID, d2.ID, -1, d4.ID)
         #if d2 isn't trump
         elif(d1.isTrump and d3.isTrump and d4.isTrump):
-            return compareFour(d1.ID, -1, d3.ID, d4.ID)
+            return self.compareFour(d1.ID, -1, d3.ID, d4.ID)
         #if d1 isn't trump
         elif(d2.isTrump and d3.isTrump and d4.isTrump):
-            return compareFour(-1, d2.ID, d3.ID, d4.ID)
+            return self.compareFour(-1, d2.ID, d3.ID, d4.ID)
         #if d1 and d2
         elif(d1.isTrump and d2.isTrump):
-            return compareTwo(d1.ID, d2.ID)
+            return self.compareTwo(d1.ID, d2.ID)
         #if d1 and d3
         elif(d1.isTrump and d3.isTrump):
-            return compareThree(d1.ID , -1, d3.ID)
+            return self.compareThree(d1.ID , -1, d3.ID)
         #if d1 and d4
         elif(d1.isTrump and d4.isTrump):
-            return compareFour(d1.ID, -1,-1, d4.ID)
+            return self.compareFour(d1.ID, -1,-1, d4.ID)
         #if d2 and d3
         elif(d2.isTrump and d3.isTrump):
-            return compareFour(-1,d2.ID,d3.ID,-1)
+            return self.compareFour(-1,d2.ID,d3.ID,-1)
         #if d2 and d4
         elif(d2.isTrump and d4.isTrump):
-            return compareFour(-1,d2.ID,-1,d4.ID)
+            return self.compareFour(-1,d2.ID,-1,d4.ID)
         #if d3 and d4
         elif(d3.isTrump and d4.isTrump):
-            return compareFour(-1,-1,d3.ID,d4.isTrump)
+            return self.compareFour(-1,-1,d3.ID,d4.isTrump)
         elif(d1.isTrump):
             return 1
         elif(d2.isTrump):
@@ -311,39 +352,6 @@ class THE_GAME(object):
         # if nothing matches, return 1
         return 1
 
-    #this will return 1, 2, or 3. Which ever is the highest
-    def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
-        if(intOne > intTwo):
-            if(intOne > intThree):
-                if(intOne > intFour):
-                    return 1
-                else:
-                    return 4
-            elif(intThree > intFour):
-                return 3
-            else:
-                return 4
-        elif(intTwo > intThree):
-            if(intTwo > intFour):
-                return 2
-            else:
-                return 4
-        elif(intThree > intFour):
-            return 3
-        else:
-            return 4
-
-    def compareThree(intOne: int, intTwo: int, intThree: int) -> int:
-        if( intOne > intTwo):
-            if(intOne > intThree):
-                return 1
-            else:
-                return 3
-        elif (intTwo > intThree):
-            return 2
-        else:
-            return 3
-
     #this will return 1 or 2. Which ever is highest
     def compareTwo(intOne: int, intTwo: int) -> int:
         if (intOne > intTwo):
@@ -359,9 +367,6 @@ class THE_GAME(object):
     def game_is_over(self):
         print("The human wins!")
         return 99
-
-    
-
 
     # --- pygame functions ---
     def updatePygame(self):
@@ -385,7 +390,7 @@ class THE_GAME(object):
             else:
                 theGame.mouseUp = False
 
-    # Simple getter functions for vairables
+    #  --- Simple getter functions for vairables ---
     def getIsQuit(self):
         return self.isQuit
     
@@ -417,7 +422,8 @@ while(not exit):
     if(theGame.state == 'MainMenu'):
         theGame.startGame()
     elif(theGame.state == 'Setup'):
-        print("setup")
+        theGame.deal_and_shuffle()
+        theGame.doneDealing()
     elif(theGame.state == "Bidding"):
         print("Bidding")
     elif(theGame.state == 'Quit'):
