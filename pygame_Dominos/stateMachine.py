@@ -108,7 +108,7 @@ class THE_GAME(object):
         self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding', after='ask_for_bids')
 
         # Set Trump after bidding commpletes TODO
-        self.Machine.add_transition('doneBidding','Bididng','SetTrump')
+        self.Machine.add_transition('doneBidding','Bidding','SetTrump')
 
         # Move from "SetTrump" to Playing the game TODO
         self.Machine.add_transition('doneSettingTrump','SetTrump','PlayGame', after='start_playing_dominos')
@@ -148,7 +148,7 @@ class THE_GAME(object):
             self.computer2Hand[x] = self.shuffledDominos[x+7]
             self.computer3Hand[x] = self.shuffledDominos[x+14]
             self.computer4Hand[x] = self.shuffledDominos[x+21]
-
+        print(self.computer2Hand[0].ID)
 
     # --- State Methods ---
     def askComputerBid(self, computerHand, curerntWinner): # TODO
@@ -156,6 +156,7 @@ class THE_GAME(object):
         # do fancy look up
         # determine possible bid
         # compare value to current vid
+        print(computerHand[0].ID)
         suits = [0,0,0,0,0,0,0]
         # loop through each suit and determine how many of each you have
         for x in range(7):
@@ -176,7 +177,7 @@ class THE_GAME(object):
         print(suits)
         return 0
 
-    def askHumanBid(self): # TODO - 
+    def askHumanBid(self, humanHand, currentMaxBid): # TODO - 
         # create a pop up
         asking = True
         humanBid = 0
@@ -184,6 +185,9 @@ class THE_GAME(object):
         asking = False
         # ask for a number above 29 or current max mid else pass
 
+
+        # debug 
+        humanBid = 30
         return humanBid, asking
     
     def setTrump(self, dominoArray, trump):
@@ -200,11 +204,11 @@ class THE_GAME(object):
         # loop 4 times for all players
         for x in range(4):
             # reset starting player # for roll over
-            if(currentPlayer == 5):
-                currentPlayer = 1
+            if(currentPlayer == 4):
+                currentPlayer = 0
         
             # if 2,3,4 its computer
-            if(currentPlayer != 1):
+            if(currentPlayer != 0):
                 currentBid = self.askComputerBid(allHands[currentPlayer], currentWinner[0])
             # if 1, its human
             else:
@@ -417,15 +421,19 @@ while(not exit):
     
     # fills the screen with a color every loop
     theGame.screen.fill((100,100,70))
-    
+    print(theGame.state)
 
     if(theGame.state == 'MainMenu'):
         theGame.startGame()
     elif(theGame.state == 'Setup'):
-        theGame.deal_and_shuffle()
+        theGame.deal_and_shuffle() # this should be called from "doneDealing()"
         theGame.doneDealing()
     elif(theGame.state == "Bidding"):
-        print("Bidding")
+        theGame.doneBidding()
+    elif(theGame.state == "SetTrump"):
+        theGame.doneSettingTrump()
+    elif(theGame.state  == "PlayGame"):
+        theGame.donePlaying()
     elif(theGame.state == 'Quit'):
         pygame.quit()
     else:
