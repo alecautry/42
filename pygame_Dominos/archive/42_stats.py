@@ -1,5 +1,5 @@
-from dominoObject import *
-from functions import *
+from pygame_Dominos.domino import *
+from pygame_Dominos.archive.functions import *
 import array as ar
 from itertools import *
 import time
@@ -12,36 +12,36 @@ import pyarrow.parquet as pq
 from pathlib import Path
 start = time.time()
 
-d0 = DOMINO(0,0,0,True,False) 
-d1 = DOMINO(1,1,0,False,False)
-d2 = DOMINO(2,1,1,True,False)
-d3 = DOMINO(3,2,0,False,False)
-d4 = DOMINO(4,2,1,False,False)
-d5 = DOMINO(5,2,2,True,False)
-d6 = DOMINO(6,3,0,False,False)
-d7 = DOMINO(7,3,1,False,False)
-d8 = DOMINO(8,3,2,False,False)
-d9 = DOMINO(9,3,3,True,False)
-d10 = DOMINO(10,4,0,False,False)
-d11 = DOMINO(11,4,1,False,False)
-d12 = DOMINO(12,4,2,False,False)
-d13 = DOMINO(13,4,3,False,False)
-d14 = DOMINO(14,4,4,True,False)
-d15 = DOMINO(15,5,0,False,False)
-d16 = DOMINO(16,5,1,False,False)
-d17 = DOMINO(17,5,2,False,False)
-d18 = DOMINO(18,5,3,False,False)
-d19 = DOMINO(19,5,4,False,False)
-d20 = DOMINO(20,5,5,True,False)
-d21 = DOMINO(21,6,0,False,False)
-d22 = DOMINO(22,6,1,False,False)
-d23 = DOMINO(23,6,2,False,False)
-d24 = DOMINO(24,6,3,False,False)
-d25 = DOMINO(25,6,4,False,False)
-d26 = DOMINO(26,6,5,False,False)
-d27 = DOMINO(27,6,6,True,False)
+d0 = Domino(0,0,0,True,False) 
+d1 = Domino(1,1,0,False,False)
+d2 = Domino(2,1,1,True,False)
+d3 = Domino(3,2,0,False,False)
+d4 = Domino(4,2,1,False,False)
+d5 = Domino(5,2,2,True,False)
+d6 = Domino(6,3,0,False,False)
+d7 = Domino(7,3,1,False,False)
+d8 = Domino(8,3,2,False,False)
+d9 = Domino(9,3,3,True,False)
+d10 = Domino(10,4,0,False,False)
+d11 = Domino(11,4,1,False,False)
+d12 = Domino(12,4,2,False,False)
+d13 = Domino(13,4,3,False,False)
+d14 = Domino(14,4,4,True,False)
+d15 = Domino(15,5,0,False,False)
+d16 = Domino(16,5,1,False,False)
+d17 = Domino(17,5,2,False,False)
+d18 = Domino(18,5,3,False,False)
+d19 = Domino(19,5,4,False,False)
+d20 = Domino(20,5,5,True,False)
+d21 = Domino(21,6,0,False,False)
+d22 = Domino(22,6,1,False,False)
+d23 = Domino(23,6,2,False,False)
+d24 = Domino(24,6,3,False,False)
+d25 = Domino(25,6,4,False,False)
+d26 = Domino(26,6,5,False,False)
+d27 = Domino(27,6,6,True,False)
 
-dominoData = [(0,0,0,True,False),
+DominoData = [(0,0,0,True,False),
 (1,1,0,False,False),
 (2,1,1,True,False),
 (3,2,0,False,False),
@@ -69,16 +69,16 @@ dominoData = [(0,0,0,True,False),
 (25,6,4,False,False),
 (26,6,5,False,False),
 (27,6,6,True,False)]
-dominoColumns = ["ID", "HighSide", "LowSide", "isDouble","isTrump"]
+DominoColumns = ["ID", "HighSide", "LowSide", "isDouble","isTrump"]
 
-dominoRange = range(28)
+DominoRange = range(28)
 allDominoIDs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
 trumpRange = range(8)
 
 allDominos = [d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27,d27]
 
 
-combo = permutations(dominoRange, 4)
+combo = permutations(DominoRange, 4)
 
 
 ######################################################################
@@ -120,7 +120,7 @@ saveString = list()
 start = time.time()
 player1hands = list(combinations(allDominoIDs,7))
 tempDominoList = list(allDominoIDs)
-# remove the dominos in player 1 hand from the list
+# remove the Dominos in player 1 hand from the list
 for x in player1hands[0]:
     tempDominoList.remove(x)
 

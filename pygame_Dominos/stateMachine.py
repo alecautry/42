@@ -2,48 +2,16 @@
 
 import pygame
 from transitions import Machine
-#from functions import *
+from pygame_Dominos.archive.functions import *
 from drawingFunctions import *
-from dominoObject import *
-import time
+from pygame_Dominos.domino import *
 import random
 
 
 class THE_GAME(object):
-
     # Create Class Variables that are constant to all classes
-    # create all dominos
-    d0 = DOMINO(0,0,0,True,False) 
-    d1 = DOMINO(1,1,0,False,False)
-    d2 = DOMINO(2,1,1,True,False)
-    d3 = DOMINO(3,2,0,False,False)
-    d4 = DOMINO(4,2,1,False,False)
-    d5 = DOMINO(5,2,2,True,False)
-    d6 = DOMINO(6,3,0,False,False)
-    d7 = DOMINO(7,3,1,False,False)
-    d8 = DOMINO(8,3,2,False,False)
-    d9 = DOMINO(9,3,3,True,False)
-    d10 = DOMINO(10,4,0,False,False)
-    d11 = DOMINO(11,4,1,False,False)
-    d12 = DOMINO(12,4,2,False,False)
-    d13 = DOMINO(13,4,3,False,False)
-    d14 = DOMINO(14,4,4,True,False)
-    d15 = DOMINO(15,5,0,False,False)
-    d16 = DOMINO(16,5,1,False,False)
-    d17 = DOMINO(17,5,2,False,False)
-    d18 = DOMINO(18,5,3,False,False)
-    d19 = DOMINO(19,5,4,False,False)
-    d20 = DOMINO(20,5,5,True,False)
-    d21 = DOMINO(21,6,0,False,False)
-    d22 = DOMINO(22,6,1,False,False)
-    d23 = DOMINO(23,6,2,False,False)
-    d24 = DOMINO(24,6,3,False,False)
-    d25 = DOMINO(25,6,4,False,False)
-    d26 = DOMINO(26,6,5,False,False)
-    d27 = DOMINO(27,6,6,True,False)
-
-    allDominoIDs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
-    allDominos = [d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27,d27]
+    # create all Dominos
+    allDominos = DominoFactory.create()
     # define the states
     states = ['MainMenu','InGameMenu', 'Setup', 'Bidding', 'SetTrump','PlayGame','GameOver', 'Quit']
     # screen resolution 
@@ -66,7 +34,7 @@ class THE_GAME(object):
         self.computer2Hand= [0,0,0,0,0,0,0]
         self.computer3Hand= [0,0,0,0,0,0,0]
         self.computer4Hand= [0,0,0,0,0,0,0]
-        for x in range(7):  # Each hand starts as the first 7 dominos
+        for x in range(7):  # Each hand starts as the first 7 Dominos
             self.player1Hand[x] = THE_GAME.allDominos[x]
             self.computer2Hand[x] = THE_GAME.allDominos[x+7]
             self.computer3Hand[x] = THE_GAME.allDominos[x+14]
@@ -125,7 +93,7 @@ class THE_GAME(object):
         self.Machine.add_transition(trigger='doneBidding',source='Bidding',dest='SetTrump',conditions=['ask_for_bids', 'getIsSetTrump'])
 
         # Move from "SetTrump" to Playing the game TODO
-        self.Machine.add_transition(trigger='doneSettingTrump',source='SetTrump',dest='PlayGame', after='start_playing_dominos', conditions=['set_trump','getIsPlayGame'])
+        self.Machine.add_transition(trigger='doneSettingTrump',source='SetTrump',dest='PlayGame', after='start_playing_Dominos', conditions=['set_trump','getIsPlayGame'])
 
         # Move from Playing the game to GameOver state TODO
         self.Machine.add_transition(trigger='donePlaying',source='PlayGame', dest='GameOver', after='game_is_over', conditions=['game_is_over','getIsGameOver'])
@@ -154,7 +122,7 @@ class THE_GAME(object):
     
     def deal_and_shuffle(self):
         # Shuffle
-        # use this to shuffle the dominos
+        # use this to shuffle the Dominos
         random.shuffle(self.shuffledDominos)
 
         # Deal
@@ -169,7 +137,7 @@ class THE_GAME(object):
 
     # --- State Methods ---
     def askComputerBid(self, computerHand, curerntWinner): # TODO
-        # Look at dominos
+        # Look at Dominos
         # do fancy look up
         # determine possible bid
         # compare value to current vid
@@ -301,7 +269,7 @@ class THE_GAME(object):
             return 3
 
     def trickWinner(self, theTrick): # TODO
-        #  trickWinner2(d1: DOMINO, d2: DOMINO, d3: DOMINO, d4: DOMINO) -> int:
+        #  trickWinner2(d1: Domino, d2: Domino, d3: Domino, d4: Domino) -> int:
         # dlead = d1
         d1 = theTrick[0]
         d2 = theTrick[1]
@@ -403,7 +371,7 @@ class THE_GAME(object):
         else:
             return 2
 
-    def start_playing_dominos(self):
+    def start_playing_Dominos(self):
         # Bid Winner sets trump
 
         self.isSetTrump = False
@@ -439,7 +407,7 @@ class THE_GAME(object):
                 theGame.mouseUp = False
 
     def drawMainGame(self):
-        # draw dominos on screen TODO
+        # draw Dominos on screen TODO
          # Draw player areas based on the image
         pygame.draw.rect(self.screen, WHITE, (20, 70, 100, 550))   # Left player hand
         pygame.draw.rect(self.screen, WHITE, (140, 20, 620, 100))  # Top player hand
@@ -453,14 +421,14 @@ class THE_GAME(object):
         # Draw center playing area
         pygame.draw.rect(self.screen, WHITE, (350, 275, 100, 50))  # Center playing area
 
-        # Draw dominoes (placeholders)
-        # draw_domino(screen, 100, res[1] - 200, 6, 0)   # Example center domino
-        # draw_domino(screen, 275, res[1] - 200, 6, 1)   # Example bottom player domino
-        # draw_domino(screen, 450, res[1] - 200, 6, 2)   # Example top player domino
-        # draw_domino(screen, 625, res[1] - 200, 6, 3)   # Example right player domino
-        # draw_domino(screen, 200, res[1] - 100, 6, 4)   # Example left player domino
-        # draw_domino(screen, 375, res[1] - 100, 6, 5)   # Example left player domino
-        # draw_domino(screen, 550, res[1] - 100, 6, 6)   # Example left player domino
+        # Draw Dominoes (placeholders)
+        # draw_Domino(screen, 100, res[1] - 200, 6, 0)   # Example center Domino
+        # draw_Domino(screen, 275, res[1] - 200, 6, 1)   # Example bottom player Domino
+        # draw_Domino(screen, 450, res[1] - 200, 6, 2)   # Example top player Domino
+        # draw_Domino(screen, 625, res[1] - 200, 6, 3)   # Example right player Domino
+        # draw_Domino(screen, 200, res[1] - 100, 6, 4)   # Example left player Domino
+        # draw_Domino(screen, 375, res[1] - 100, 6, 5)   # Example left player Domino
+        # draw_Domino(screen, 550, res[1] - 100, 6, 6)   # Example left player Domino
         draw_Player_Dominos(self.screen, self.player1Hand, self.res)
         # Draw game information
         draw_text(self.screen, "Player 1 Score: 10", 320, 470)
