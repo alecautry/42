@@ -178,7 +178,7 @@ class THE_GAME(object):
         humanBid = 30
         return humanBid, asking
     
-    def set_trump(self):
+    def set_trump(self): # TODO
         # ask for a trump
         self.trump = 1
 
