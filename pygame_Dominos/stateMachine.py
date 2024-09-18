@@ -245,9 +245,12 @@ class THE_GAME(object):
         # if 2,3,4 its computer
         if(self.startingPlayer != 0):
             currentBid = self.askComputerBid(allHands[self.startingPlayer], currentWinner[0])
+            self.startingPlayer += 1
         # if 1, its human
         else:
             currentBid, asking = self.askHumanBid(allHands[0], currentWinner[0])
+            if(asking):
+                self.startingPlayer += 1
                 
 
         #if the bid is better, then they win
@@ -255,7 +258,7 @@ class THE_GAME(object):
             currentWinner[0] = currentBid
             currentWinner[1] = self.startingPlayer
     
-        self.startingPlayer += 1
+        
         currentBid = 0
 
 

@@ -79,6 +79,9 @@ def draw_Player_Dominos(screen, dominoList, resolution):
 
 
 def draw_Player_Bid(screen, surf):
+
     # draw pop up
     pygame.draw.rect(screen, GREEN, (300, 450, 300, 200))  # Domino border
-    #screen.blit(surf, (300, 450, 300, 200))
+    drawButton2(screen, )
+
+    #screen.blit(screen, (300, 450, 300, 200))
