@@ -1,4 +1,5 @@
 import pygame
+import pdb
 
 GREEN = (0, 128, 0)
 WHITE = (255, 255, 255)
@@ -77,6 +78,7 @@ def draw_Player_Dominos(screen, dominoList, resolution):
             draw_domino(screen, 550, resolution[1] - 100, dominoList[6].highSide, dominoList[6].lowSide)   # Example left player domino
 
 
-def draw_Player_Bid(screen):
+def draw_Player_Bid(screen, surf):
     # draw pop up
     pygame.draw.rect(screen, GREEN, (300, 450, 300, 200))  # Domino border
+    #screen.blit(surf, (300, 450, 300, 200))

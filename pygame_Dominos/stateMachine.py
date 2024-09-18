@@ -48,7 +48,11 @@ class THE_GAME(object):
     states = ['MainMenu','InGameMenu', 'Setup', 'Bidding', 'SetTrump','PlayGame','GameOver', 'Quit']
     # screen resolution 
     res = (900,900) 
-    
+    # light shade of the button 
+    color_light = (170,170,170) 
+  
+    # dark shade of the button 
+    color_dark = (100,100,100) 
 
     def __init__(self, name) :
        
@@ -70,25 +74,35 @@ class THE_GAME(object):
         
         self.shuffledDominos = THE_GAME.allDominos # I need to see if changing shuffled Dominos effects THE_GAME.allDominos TODO
 
-        self.startingPlayer = random.randrange(1, 5) # randomly determine who starts(player 1 is Human)
+        self.startingPlayer = random.randrange(0, 4) # randomly determine who starts(player 1 is Human)
        
-        
-        # pygame Stuff 
-        self.mouse = -1
-        self.mouseDown = False
-        self.mouseUp = False
+        self.currentBidWinner = -1
+
 
         # state variables to use
         self.isMainMenu = False
         self.isSetup = False
         self.isQuit = False
-        self.isBidding = False        
+        self.isBidding = False     
+        self.isSetTrump = False
+        self.isPlayGame = False
+        self.isGameOver = False   
+        self.isInGameMenu = False
+
+
+        # pygame Stuff 
+        self.mouse = -1
+        self.mouseDown = False
+        self.mouseUp = False
 
         # initializing the pygame constructor 
         pygame.init() 
-        clock = pygame.time.Clock()
-        clock.tick(60)
+        self.clock = pygame.time.Clock()
+        self.clock.tick(60)
         
+        # Create customer surfaces
+        self.GUI_surf = pygame.surface.Surface(THE_GAME.res)
+        self.BID_surf = pygame.surface.Surface(THE_GAME.res)
   
         # opens up a window 
         self.screen = pygame.display.set_mode(THE_GAME.res) 
@@ -105,16 +119,17 @@ class THE_GAME(object):
         self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Quit', conditions=['create_mainMenu','getIsQuit'])
 
         # Setup leads to bidding
-        self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding', after='ask_for_bids')
+        self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding',before='deal_and_shuffle',conditions=['deal_and_shuffle','getIsBidding'])
 
         # Set Trump after bidding commpletes TODO
-        self.Machine.add_transition('doneBidding','Bidding','SetTrump')
+        self.Machine.add_transition(trigger='doneBidding',source='Bidding',dest='SetTrump',conditions=['ask_for_bids', 'getIsSetTrump'])
 
         # Move from "SetTrump" to Playing the game TODO
-        self.Machine.add_transition('doneSettingTrump','SetTrump','PlayGame', after='start_playing_dominos')
+        self.Machine.add_transition(trigger='doneSettingTrump',source='SetTrump',dest='PlayGame', after='start_playing_dominos', conditions=['set_trump','getIsPlayGame'])
 
         # Move from Playing the game to GameOver state TODO
-        self.Machine.add_transition('donePlaying','PlayGame', 'GameOver', after='game_is_over')
+        self.Machine.add_transition(trigger='donePlaying',source='PlayGame', dest='GameOver', after='game_is_over', conditions=['game_is_over','getIsGameOver'])
+    
 
 
         # Global States
@@ -148,7 +163,9 @@ class THE_GAME(object):
             self.computer2Hand[x] = self.shuffledDominos[x+7]
             self.computer3Hand[x] = self.shuffledDominos[x+14]
             self.computer4Hand[x] = self.shuffledDominos[x+21]
-        print(self.computer2Hand[0].ID)
+        
+        self.isBidding = True
+        return True
 
     # --- State Methods ---
     def askComputerBid(self, computerHand, curerntWinner): # TODO
@@ -181,7 +198,10 @@ class THE_GAME(object):
         # create a pop up
         asking = True
         humanBid = 0
-        draw_Player_Bid(self.screen)
+        print('here')
+        
+        draw_Player_Bid(self.screen, self.BID_surf)
+        
         asking = False
         # ask for a number above 29 or current max mid else pass
 
@@ -190,42 +210,59 @@ class THE_GAME(object):
         humanBid = 30
         return humanBid, asking
     
-    def setTrump(self, dominoArray, trump):
-        for each in dominoArray:
-            if(each.highSide == trump or (each.lowSide == trump)):
+    def set_trump(self):
+        # ask for a trump
+        self.trump = 1
+
+        for each in self.player1Hand:
+            if(each.highSide == self.trump or (each.lowSide == self.trump)):
                 each.isTrump = True
+        for each in self.computer2Hand:
+            if(each.highSide == self.trump or (each.lowSide == self.trump)):
+                each.isTrump = True
+        for each in self.computer3Hand:
+            if(each.highSide == self.trump or (each.lowSide == self.trump)):
+                each.isTrump = True
+        for each in self.computer4Hand:
+            if(each.highSide == self.trump or (each.lowSide == self.trump)):
+                each.isTrump = True
+        self.isSetTrump = False
+        self.isPlayGame = True
+        return True
         
     def ask_for_bids(self): # TODO move the ask for bids function here. Instead of returns, update local class members
         asking = True
         currentWinner = [0,0] # [bidAmount, playerNum]
         currentBid = 0
-        currentPlayer = self.startingPlayer
+        self.startingPlayer
         allHands = [self.player1Hand, self.computer2Hand, self.computer3Hand, self.computer4Hand]
         # loop 4 times for all players
-        for x in range(4):
-            # reset starting player # for roll over
-            if(currentPlayer == 4):
-                currentPlayer = 0
         
-            # if 2,3,4 its computer
-            if(currentPlayer != 0):
-                currentBid = self.askComputerBid(allHands[currentPlayer], currentWinner[0])
-            # if 1, its human
-            else:
-                while(asking):
-                    currentBid, asking = self.askHumanBid(allHands[0], currentWinner[0])
+        # reset starting player for roll over
+        if(self.startingPlayer == 4):
+            self.startingPlayer = 0
+    
+        # if 2,3,4 its computer
+        if(self.startingPlayer != 0):
+            currentBid = self.askComputerBid(allHands[self.startingPlayer], currentWinner[0])
+        # if 1, its human
+        else:
+            currentBid, asking = self.askHumanBid(allHands[0], currentWinner[0])
+                
 
-            #if the bid is better, then they win
-            if(currentBid > currentWinner[0]):
-                currentWinner[0] = currentBid
-                currentWinner[1] = currentPlayer
-        
-            currentPlayer+=1
-            currentBid = 0
+        #if the bid is better, then they win
+        if(currentBid > currentWinner[0]):
+            currentWinner[0] = currentBid
+            currentWinner[1] = self.startingPlayer
+    
+        self.startingPlayer += 1
+        currentBid = 0
 
 
-        return currentWinner
-
+        self.currentBidWinner = currentWinner
+        self.isBidding = False
+        #self.isSetTrump = True
+        return True
 
     #this will return 1, 2, or 3. Which ever is the highest
     def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
@@ -366,11 +403,16 @@ class THE_GAME(object):
     def start_playing_dominos(self):
         # Bid Winner sets trump
 
-        return 99
+        self.isSetTrump = False
+        self.isGameOver = True
+        return True
     
     def game_is_over(self):
         print("The human wins!")
-        return 99
+
+        self.isGameOver = False
+        self.isMainMenu = True
+        return True
 
     # --- pygame functions ---
     def updatePygame(self):
@@ -378,7 +420,6 @@ class THE_GAME(object):
         #static updates
         theGame.mouse = pygame.mouse.get_pos()
 
-    
     def eventUpdate(self):
         for ev in pygame.event.get(): 
           
@@ -394,13 +435,59 @@ class THE_GAME(object):
             else:
                 theGame.mouseUp = False
 
+    def drawMainGame(self):
+        # draw dominos on screen TODO
+         # Draw player areas based on the image
+        pygame.draw.rect(self.screen, WHITE, (20, 70, 100, 550))   # Left player hand
+        pygame.draw.rect(self.screen, WHITE, (140, 20, 620, 100))  # Top player hand
+        pygame.draw.rect(self.screen, WHITE, (self.res[0] - 120, 70, 100, 550))  # Right player hand
+        
+        # Human Player Location
+        pygame.draw.rect(self.screen, self.color_dark, (0, THE_GAME.res[1] - 270, THE_GAME.res[0], THE_GAME.res[1]))  # Bottom player hand
+        pygame.draw.rect(self.screen, self.color_light, (20, THE_GAME.res[1] - 250, THE_GAME.res[0]-40, 250))  # Bottom player hand
+
+
+        # Draw center playing area
+        pygame.draw.rect(self.screen, WHITE, (350, 275, 100, 50))  # Center playing area
+
+        # Draw dominoes (placeholders)
+        # draw_domino(screen, 100, res[1] - 200, 6, 0)   # Example center domino
+        # draw_domino(screen, 275, res[1] - 200, 6, 1)   # Example bottom player domino
+        # draw_domino(screen, 450, res[1] - 200, 6, 2)   # Example top player domino
+        # draw_domino(screen, 625, res[1] - 200, 6, 3)   # Example right player domino
+        # draw_domino(screen, 200, res[1] - 100, 6, 4)   # Example left player domino
+        # draw_domino(screen, 375, res[1] - 100, 6, 5)   # Example left player domino
+        # draw_domino(screen, 550, res[1] - 100, 6, 6)   # Example left player domino
+        draw_Player_Dominos(self.screen, self.player1Hand, self.res)
+        # Draw game information
+        draw_text(self.screen, "Player 1 Score: 10", 320, 470)
+        draw_text(self.screen, "Player 2 Score: 8", 320, 110)
+        draw_text(self.screen, "Player 3 Score: 12", 700, 620)
+        draw_text(self.screen, "Player 4 Score: 7", 20, 620)
     #  --- Simple getter functions for vairables ---
     def getIsQuit(self):
         return self.isQuit
     
+    def getIsBidding(self):
+        return self.isBidding
+
     def getIsSetup(self):
         return self.isSetup
 
+    def getIsSetTrump(self):
+        return self.isSetTrump
+
+    def getIsPlayGame(self):
+        return self.isPlayGame
+    
+    def getIsGameOver(self):
+        return self.isGameOver
+    
+    def getIsMainMenu(self):
+        return self.isMainMenu
+    
+    def getIsInGameMenu(self):
+        return self.isInGameMenu
 # end of Class
 
 
@@ -422,11 +509,12 @@ while(not exit):
     # fills the screen with a color every loop
     theGame.screen.fill((100,100,70))
     print(theGame.state)
-
+    if(theGame.state != 'MainMenu'):
+        theGame.drawMainGame()
+    
     if(theGame.state == 'MainMenu'):
-        theGame.startGame()
+        theGame.startGame()     
     elif(theGame.state == 'Setup'):
-        theGame.deal_and_shuffle() # this should be called from "doneDealing()"
         theGame.doneDealing()
     elif(theGame.state == "Bidding"):
         theGame.doneBidding()
@@ -440,10 +528,8 @@ while(not exit):
         exit = True
 
      
-
     # updates the frames of the game 
     pygame.display.update()
-    #pygame.display.flip()
 
 #clean up
 pygame.quit()

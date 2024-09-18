@@ -7,5 +7,6 @@ Move "main" code from stateMachine.py to main.py
 clean up code
 
 
-
+Need to work on staet transitions so the while loop can handle everything
+Next is to create bidding menu for human to pick
 
