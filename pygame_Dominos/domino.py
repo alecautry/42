@@ -1,5 +1,11 @@
 # plain old data struct for Domino class
 class Domino:
+    ID: int
+    highSide: int
+    lowSide: int
+    isDouble: bool
+    isTrump: bool
+
     def __init__(self, id, high, low, double, trump = False):
         self.ID = id
         self.highSide = high

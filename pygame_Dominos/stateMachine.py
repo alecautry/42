@@ -1,110 +1,102 @@
 # This is a global class for a StateMachine
 
-import pygame
-from transitions import Machine
-from pygame_Dominos.archive.functions import *
-from drawingFunctions import *
-from pygame_Dominos.domino import *
+from enum import Enum
 import random
 
+import pygame
+from transitions import Machine
+from drawingFunctions import *
+from pygame_Dominos.domino import *
 
-class THE_GAME(object):
-    # Create Class Variables that are constant to all classes
-    # create all Dominos
-    allDominos = DominoFactory.create()
+class Game(object):
+    # CONSTANTS
     # define the states
-    states = ['MainMenu','InGameMenu', 'Setup', 'Bidding', 'SetTrump','PlayGame','GameOver', 'Quit']
-    # screen resolution 
-    res = (900,900) 
+    class State(Enum):
+        MAIN_MENU = 1
+        GAME_MENU = 2
+        SETUP = 3
+        BIDDING = 4
+        SET_TRUMP = 5
+        PLAY_GAME = 6
+        GAME_OVER = 7
+        QUIT = 8
+
+    # screen resolution
+    SCREEN_RES = (900,900)
     # light shade of the button 
-    color_light = (170,170,170) 
-  
+    COLOR_LIGHT = (170,170,170)
     # dark shade of the button 
-    color_dark = (100,100,100) 
+    COLOR_DARK = (100,100,100)
+
+    name: str
+
+    allDominos: list[Domino] = DominoFactory.create()
+    hands: list[list[Domino]] = [[None] * 4 for i in range(0,8)]
+
+    team1Score: int = 0
+    team2Score: int = 0
+    currentTrump: int = -1
+    currentBidWinner: int = -1
+    startingPlayer: int = 0
+    currentGameState: State = State.MAIN_MENU
+
+    # pygame mouse vars
+    mouse: int = -1
+    mouseDown: bool = False
+    mouseUp: bool = False
+
+    clock: pygame.time.Clock
+    GUI_surf: pygame.surface.Surface
+    BID_surf: pygame.surface.Surface
+    screen: pygame.surface.Surface
+
+    stateMachine: Machine
 
     def __init__(self, name) :
-       
+
         self.name = name
-    
-        # Data to keep track of 42 Stuff
-        self.team1Score = 0
-        self.team2Score = 0
-        self.Trump = -1
-        self.player1Hand = [0,0,0,0,0,0,0]
-        self.computer2Hand= [0,0,0,0,0,0,0]
-        self.computer3Hand= [0,0,0,0,0,0,0]
-        self.computer4Hand= [0,0,0,0,0,0,0]
-        for x in range(7):  # Each hand starts as the first 7 Dominos
-            self.player1Hand[x] = THE_GAME.allDominos[x]
-            self.computer2Hand[x] = THE_GAME.allDominos[x+7]
-            self.computer3Hand[x] = THE_GAME.allDominos[x+14]
-            self.computer4Hand[x] = THE_GAME.allDominos[x+21]
-        
-        self.shuffledDominos = THE_GAME.allDominos # I need to see if changing shuffled Dominos effects THE_GAME.allDominos TODO
 
-        self.startingPlayer = random.randrange(0, 4) # randomly determine who starts(player 1 is Human)
-       
-        self.currentBidWinner = -1
-
-
-        # state variables to use
-        self.isMainMenu = False
-        self.isSetup = False
-        self.isQuit = False
-        self.isBidding = False     
-        self.isSetTrump = False
-        self.isPlayGame = False
-        self.isGameOver = False   
-        self.isInGameMenu = False
-
-
-        # pygame Stuff 
-        self.mouse = -1
-        self.mouseDown = False
-        self.mouseUp = False
+        # TODO seed this
+        # randomly determine who starts(player 1 is Human)
+        self.startingPlayer = random.randrange(0, 4)
 
         # initializing the pygame constructor 
-        pygame.init() 
+        pygame.init()
         self.clock = pygame.time.Clock()
         self.clock.tick(60)
-        
+
         # Create customer surfaces
-        self.GUI_surf = pygame.surface.Surface(THE_GAME.res)
-        self.BID_surf = pygame.surface.Surface(THE_GAME.res)
-  
+        self.GUI_surf = pygame.surface.Surface(Game.SCREEN_RES)
+        self.BID_surf = pygame.surface.Surface(Game.SCREEN_RES)
+
         # opens up a window 
-        self.screen = pygame.display.set_mode(THE_GAME.res) 
+        self.screen = pygame.display.set_mode(Game.SCREEN_RES) 
 
-        # itnialize the state machine
-        self.Machine = Machine(model=self, states=THE_GAME.states, initial="MainMenu")
+        # init the state machine
+        self.createStateMachine()
 
-
+    # TODO update
+    def createStateMachine(self) -> None:
+        self.stateMachine = Machine(model=self, states=Game.State._member_names_, initial="MAIN_MENU")
         # Add some transitions. We could also define these using a static list of
         # dictionaries, as we did with states above, and then pass the list to
         # the Machine initializer as the transitions= argument.
-
-        self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Setup',conditions=['create_mainMenu','getIsSetup'])
-        self.Machine.add_transition(trigger="startGame", source='MainMenu', dest='Quit', conditions=['create_mainMenu','getIsQuit'])
-
+        self.stateMachine.add_transition(trigger="startGame", source='MainMenu', dest='Setup',conditions=['createMainMenu','inSetup'])
+        self.stateMachine.add_transition(trigger="startGame", source='MainMenu', dest='Quit', conditions=['createMainMenu','inQuit'])
         # Setup leads to bidding
-        self.Machine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding',before='deal_and_shuffle',conditions=['deal_and_shuffle','getIsBidding'])
-
+        self.stateMachine.add_transition(trigger='doneDealing', source='Setup', dest='Bidding',before='deal_and_shuffle',conditions=['deal_and_shuffle','inBidding'])
         # Set Trump after bidding commpletes TODO
-        self.Machine.add_transition(trigger='doneBidding',source='Bidding',dest='SetTrump',conditions=['ask_for_bids', 'getIsSetTrump'])
-
+        self.stateMachine.add_transition(trigger='doneBidding',source='Bidding',dest='SetTrump',conditions=['ask_for_bids', 'inSetTrump'])
         # Move from "SetTrump" to Playing the game TODO
-        self.Machine.add_transition(trigger='doneSettingTrump',source='SetTrump',dest='PlayGame', after='start_playing_Dominos', conditions=['set_trump','getIsPlayGame'])
-
+        self.stateMachine.add_transition(trigger='doneSettingTrump',source='SetTrump',dest='PlayGame', after='start_playing_Dominos', conditions=['set_trump','inPlay'])
         # Move from Playing the game to GameOver state TODO
-        self.Machine.add_transition(trigger='donePlaying',source='PlayGame', dest='GameOver', after='game_is_over', conditions=['game_is_over','getIsGameOver'])
-    
-
-
+        self.stateMachine.add_transition(trigger='donePlaying',source='PlayGame', dest='GameOver', after='game_is_over', conditions=['game_is_over','gameOver'])
         # Global States
-        self.Machine.add_transition('mainMenu','*','MainMenu')
+        self.stateMachine.add_transition('mainMenu','*','MainMenu')
+        return None
 
     # The Game State Functions
-    def create_mainMenu(self):
+    def createMainMenu(self):
         startGame = -1
         quitGame = 0
 
@@ -123,14 +115,14 @@ class THE_GAME(object):
     def deal_and_shuffle(self):
         # Shuffle
         # use this to shuffle the Dominos
-        random.shuffle(self.shuffledDominos)
+        random.shuffle(self.allDominos)
 
         # Deal
-        for x in range(7):
-            self.player1Hand[x] = self.shuffledDominos[x]
-            self.computer2Hand[x] = self.shuffledDominos[x+7]
-            self.computer3Hand[x] = self.shuffledDominos[x+14]
-            self.computer4Hand[x] = self.shuffledDominos[x+21]
+        for x in range(0,8):
+            self.hands[0][x] = self.allDominos[x]
+            self.hands[1][x] = self.allDominos[x+7]
+            self.hands[2][x] = self.allDominos[x+14]
+            self.hands[3][x] = self.allDominos[x+21]
         
         self.isBidding = True
         return True
@@ -342,23 +334,23 @@ class THE_GAME(object):
         # No doubles matching Lead suit
         # Compare highside and ID
         if((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
-            return compareFour(d1.ID, d2.ID, d3.ID, d4.ID) 
+            return self.compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
         #now compare 3
         # if 1, 2, and 3 have highside but not 4
         elif((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide)):
-            return compareFour(d1.ID, d2.ID, d3.ID, -1) 
+            return self.compareFour(d1.ID, d2.ID, d3.ID, -1)
         # if 1, 2, and 4 have highside but not 3
         elif((d2.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
-            return compareFour(d1.ID, d2.ID, -1, d4.ID) 
+            return self.compareFour(d1.ID, d2.ID, -1, d4.ID)
         # if 1 and 2 but not 3 and 4
         elif(d2.highSide == d1.highSide):
-            return compareFour(d1.ID, d2.ID, -1, -1)
+            return self.compareFour(d1.ID, d2.ID, -1, -1)
         # if 1 and 3 but not 2 and 4
         elif(d3.highSide == d1.highSide):
-            return compareFour(d1.ID, -1, d3.ID, -1)
+            return self.compareFour(d1.ID, -1, d3.ID, -1)
         # if 1 and 4 but not 2 and 3
         elif(d4.highSide == d1.highSide):
-            return compareFour(d1.ID, -1, -1, d4.ID)
+            return self.compareFour(d1.ID, -1, -1, d4.ID)
 
         # I think this is everything?
         # if nothing matches, return 1
@@ -411,11 +403,11 @@ class THE_GAME(object):
          # Draw player areas based on the image
         pygame.draw.rect(self.screen, WHITE, (20, 70, 100, 550))   # Left player hand
         pygame.draw.rect(self.screen, WHITE, (140, 20, 620, 100))  # Top player hand
-        pygame.draw.rect(self.screen, WHITE, (self.res[0] - 120, 70, 100, 550))  # Right player hand
+        pygame.draw.rect(self.screen, WHITE, (self.SCREEN_RES[0] - 120, 70, 100, 550))  # Right player hand
         
         # Human Player Location
-        pygame.draw.rect(self.screen, self.color_dark, (0, THE_GAME.res[1] - 270, THE_GAME.res[0], THE_GAME.res[1]))  # Bottom player hand
-        pygame.draw.rect(self.screen, self.color_light, (20, THE_GAME.res[1] - 250, THE_GAME.res[0]-40, 250))  # Bottom player hand
+        pygame.draw.rect(self.screen, self.COLOR_DARK, (0, Game.SCREEN_RES[1] - 270, Game.SCREEN_RES[0], Game.SCREEN_RES[1]))  # Bottom player hand
+        pygame.draw.rect(self.screen, self.COLOR_LIGHT, (20, Game.SCREEN_RES[1] - 250, Game.SCREEN_RES[0]-40, 250))  # Bottom player hand
 
 
         # Draw center playing area
@@ -429,36 +421,36 @@ class THE_GAME(object):
         # draw_Domino(screen, 200, res[1] - 100, 6, 4)   # Example left player Domino
         # draw_Domino(screen, 375, res[1] - 100, 6, 5)   # Example left player Domino
         # draw_Domino(screen, 550, res[1] - 100, 6, 6)   # Example left player Domino
-        draw_Player_Dominos(self.screen, self.player1Hand, self.res)
+        draw_Player_Dominos(self.screen, self.player1Hand, self.SCREEN_RES)
         # Draw game information
         draw_text(self.screen, "Player 1 Score: 10", 320, 470)
         draw_text(self.screen, "Player 2 Score: 8", 320, 110)
         draw_text(self.screen, "Player 3 Score: 12", 700, 620)
         draw_text(self.screen, "Player 4 Score: 7", 20, 620)
-    #  --- Simple getter functions for vairables ---
-    def getIsQuit(self):
-        return self.isQuit
-    
-    def getIsBidding(self):
-        return self.isBidding
 
-    def getIsSetup(self):
-        return self.isSetup
+    def inQuit(self):
+        return (self.State.QUIT == self.currentGameState)
+    
+    def inBidding(self):
+        return (self.State.BIDDING == self.currentGameState)
 
-    def getIsSetTrump(self):
-        return self.isSetTrump
+    def inSetup(self) -> bool:
+        return (self.State.SETUP == self.currentGameState)
 
-    def getIsPlayGame(self):
-        return self.isPlayGame
+    def inSetTrump(self):
+        return (self.State.SET_TRUMP == self.currentGameState)
+
+    def inPlay(self):
+        return (self.State.PLAY_GAME == self.currentGameState)
     
-    def getIsGameOver(self):
-        return self.isGameOver
+    def gameOver(self):
+        return (self.State.GAME_OVER == self.currentGameState)
     
-    def getIsMainMenu(self):
-        return self.isMainMenu
+    def inMainMenu(self):
+        return (self.State.MAIN_MENU == self.currentGameState)
     
-    def getIsInGameMenu(self):
-        return self.isInGameMenu
+    def inGameMenu(self):
+        return (self.State.GAME_MENU == self.currentGameState)
 # end of Class
 
 
@@ -466,7 +458,7 @@ class THE_GAME(object):
 
 # move this to main.py later
 ########################################################################################################################################################
-theGame = THE_GAME("42")
+theGame = Game("42")
 exit = False
 
 while(not exit):
