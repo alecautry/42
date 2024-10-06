@@ -28,6 +28,7 @@ class DominoFactory:
                 if i == j:
                     is_double = True
             
+            
                 domino_set.append(Domino(id, hi, lo, is_double, False))
                 id += 1
 
