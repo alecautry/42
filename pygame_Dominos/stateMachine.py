@@ -6,7 +6,7 @@ import random
 import pygame
 from transitions import Machine
 from drawingFunctions import *
-from pygame_Dominos.domino import *
+from domino import *
 
 class Game(object):
     # CONSTANTS
