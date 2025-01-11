@@ -35,9 +35,9 @@ class HumanPlayer:
 
     def filter_legal_moves(self, dominoSet, lead_domino):
         # Placeholder for logic to filter legal moves
-        # Example: Only allow dominoes that match the lead domino's high or low side
+        # Example: Only allow dominoes that match any of the lead domino's high or low sides
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.lowSide]
+            legal_moves = [dom for dom in dominoSet if any(dom.highSide == ld.highSide or dom.lowSide == ld.highSide for ld in lead_domino)]
             if legal_moves:
                 return legal_moves
         return dominoSet
@@ -83,9 +83,9 @@ class ComputerPlayer:
 
     def filter_legal_moves(self, dominoSet, lead_domino):
         # Placeholder for logic to filter legal moves
-        # Example: Only allow dominoes that match the lead domino's high or low side
+        # Example: Only allow dominoes that match any of the lead domino's high or low sides
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.lowSide]
+            legal_moves = [dom for dom in dominoSet if any(dom.highSide == ld.highSide or dom.lowSide == ld.highSide for ld in lead_domino)]
             if legal_moves:
                 return legal_moves
         return dominoSet
@@ -154,7 +154,7 @@ class Trick:
             return self.compareFour(-1,d2.ID,-1,d4.ID)
         #if d3 and d4
         elif(d3.isTrump and d4.isTrump):
-            return self.compareFour(-1,-1,d3.ID,d4.isTrump)
+            return self.compareFour(-1,-1,d3.ID,d4.ID)
         elif(d1.isTrump):
             return 1
         elif(d2.isTrump):
@@ -249,7 +249,6 @@ class Game:
         self.teamOneTricks = []
         self.teamTwoTricks = []
         self.dominoSet = []
-        self.hands = [[], [], [], []]
         self.trump = None
 
     def run(self):
@@ -296,7 +295,7 @@ class Game:
     def bidding_phase(self):
         print("Bidding phase...")
         bids = []
-        bid = 0 # Placeholder for bid, start at 0
+        bid = 0
 
         for player in self.players:
 
@@ -310,6 +309,10 @@ class Game:
 
         # Winner sets the trump
         self.set_trump(winner_index)
+
+        # Set the current player to the winner of the bid
+        self.current_player_index = winner_index
+
 
     def playing_phase(self):
         print("Playing phase...")
@@ -346,27 +349,26 @@ class Game:
         # Play tricks and determine the winner of each trick
         # the winner plays in order
         # after 4 dominos are played to the TRICK
-        # a winner is determiend and the next player plays
+        # a winner is determined and the next player plays
         # the game stops when all dominos have been played
         # the winner is determined if the bidding team makes their bid or not
-        for x in range(0,7):
-            for player in self.players:
-                legal_moves = player.filter_legal_moves(player.hand, self.trick.trick)
-                if isinstance(player, HumanPlayer):
-                    domino = player.play(legal_moves)
-                else:
-                    domino = player.play(legal_moves)
+        for x in range(0, 7):
+            for _ in range(4):
+                player = self.players[self.current_player_index]
+                legal_moves = player.filter_legal_moves(player.hand, self.trick.trick[0] if self.trick.trick else None)
+                domino = player.play(legal_moves)
                 print(f"{player.name} plays domino [{domino.highSide}/{domino.lowSide}][{domino.ID}]")
                 self.trick.trick.append(domino)
-            winner = self.trick.trickWinner(self.trick.trick)
+                self.current_player_index = (self.current_player_index + 1) % 4
 
+            winner = self.trick.trickWinner(self.trick.trick)
             team = "Team 1" if winner % 2 == 0 else "Team 2"
             print(f"Player {winner} wins the trick for {team}!")
             self.current_player_index = winner
             self.trick.trick = []
-            if winner == 0 or winner == 2: # player 1 and 3, Team 1
+            if winner == 0 or winner == 2:  # player 1 and 3, Team 1
                 self.teamOneTricks.append(winner)
-            else: # player 2 and 4, Team 2
+            else:  # player 2 and 4, Team 2
                 self.teamTwoTricks.append(winner)
 
 
