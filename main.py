@@ -1,6 +1,7 @@
 import random
 from pygame_Dominos.domino import *
-
+import unittest
+import sys
 
 
 class GameState:
@@ -34,12 +35,13 @@ class HumanPlayer:
         return None
 
     def filter_legal_moves(self, dominoSet, lead_domino):
-        # Placeholder for logic to filter legal moves
-        # Example: Only allow dominoes that match any of the lead domino's high or low sides
+        # Only allow dominoes that match the lead domino's high side
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if any(dom.highSide == ld.highSide or dom.lowSide == ld.highSide for ld in lead_domino)]
+            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
             if legal_moves:
                 return legal_moves
+            else:
+                return dominoSet
         return dominoSet
     
     def get_bid(self, current_bid):
@@ -82,12 +84,13 @@ class ComputerPlayer:
         return dominoSet[0] if dominoSet else None
 
     def filter_legal_moves(self, dominoSet, lead_domino):
-        # Placeholder for logic to filter legal moves
-        # Example: Only allow dominoes that match any of the lead domino's high or low sides
+        # Only allow dominoes that match the lead domino's high side
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if any(dom.highSide == ld.highSide or dom.lowSide == ld.highSide for ld in lead_domino)]
+            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
             if legal_moves:
                 return legal_moves
+            else:
+                return dominoSet
         return dominoSet
 
     def get_bid(self, current_bid):
@@ -112,7 +115,7 @@ class Trick:
         d2 = theTrick[1]
         d3 = theTrick[2]
         d4 = theTrick[3]
-
+        print("d1:", d1.highSide, "/",d1.lowSide, "d2:", d2.highSide, "/",d2.lowSide, "d3:", d3.highSide, "/",d3.lowSide, "d4:", d4.highSide, "/",d4.lowSide)
         if(d1.isTrump & d1.isDouble):
             return 1
         elif(d2.isTrump & d2.isDouble):
@@ -121,7 +124,7 @@ class Trick:
             return 3
         elif(d4.isTrump & d4.isDouble):
             return 4
-
+        print(d1.ID,d2.ID,d3.ID,d4.ID)
         #if all trump compare ID
         if(d1.isTrump and d2.isTrump and d3.isTrump and d4.isTrump):
             return self.compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
@@ -154,6 +157,7 @@ class Trick:
             return self.compareFour(-1,d2.ID,-1,d4.ID)
         #if d3 and d4
         elif(d3.isTrump and d4.isTrump):
+            
             return self.compareFour(-1,-1,d3.ID,d4.ID)
         elif(d1.isTrump):
             return 1
@@ -360,11 +364,13 @@ class Game:
                 print(f"{player.name} plays domino [{domino.highSide}/{domino.lowSide}][{domino.ID}]")
                 self.trick.trick.append(domino)
                 self.current_player_index = (self.current_player_index + 1) % 4
+                print(self.current_player_index)
 
             winner = self.trick.trickWinner(self.trick.trick)
+            print("winner:", winner)
             team = "Team 1" if winner % 2 == 0 else "Team 2"
             print(f"Player {winner} wins the trick for {team}!")
-            self.current_player_index = winner
+            self.current_player_index = (winner - 1) % 4  # Ensure the index is within the valid range
             self.trick.trick = []
             if winner == 0 or winner == 2:  # player 1 and 3, Team 1
                 self.teamOneTricks.append(winner)
@@ -376,6 +382,11 @@ class Game:
         # Calculate scores and determine the winner
         pass
 
+
 if __name__ == "__main__":
-    game = Game()
-    game.run()
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        import test_trick  # Import the test module
+        unittest.main(module='test_trick', argv=[sys.argv[0]])  # Run unit tests
+    else:
+        game = Game()
+        game.run()
