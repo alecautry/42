@@ -18,20 +18,18 @@ class DominoFactory:
     @staticmethod
     def create() -> list[Domino]:
         domino_set = []
-        id = 0
-        for i in range(0, 7):
-            for j in range(i, 7):
+        id = 27
+        for i in range(6, -1, -1):
+            for j in range(6, i - 1, -1):
                 # set features of domino
                 hi = max(i, j)
                 lo = min(i, j)
                 is_double = False
                 if i == j:
                     is_double = True
-            
-
-            
+                
                 domino_set.append(Domino(id, hi, lo, is_double, False))
-                id += 1
+                id -= 1
 
         return domino_set
 
