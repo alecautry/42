@@ -115,135 +115,25 @@ class Trick:
         d2 = theTrick[1]
         d3 = theTrick[2]
         d4 = theTrick[3]
-        print("d1:", d1.highSide, "/",d1.lowSide, "d2:", d2.highSide, "/",d2.lowSide, "d3:", d3.highSide, "/",d3.lowSide, "d4:", d4.highSide, "/",d4.lowSide)
-        if(d1.isTrump & d1.isDouble):
-            return 1
-        elif(d2.isTrump & d2.isDouble):
-            return 2
-        elif(d3.isTrump & d3.isDouble):
-            return 3
-        elif(d4.isTrump & d4.isDouble):
-            return 4
-        print(d1.ID,d2.ID,d3.ID,d4.ID)
-        #if all trump compare ID
-        if(d1.isTrump and d2.isTrump and d3.isTrump and d4.isTrump):
-            return self.compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
-        #if d4 isn't trump
-        elif(d1.isTrump and d2.isTrump and d3.isTrump):
-            return self.compareThree(d1.ID, d2.ID, d3.ID)
-        #if d3 isn't trump
-        elif(d1.isTrump and d2.isTrump and d4.isTrump):
-            return self.compareFour(d1.ID, d2.ID, -1, d4.ID)
-        #if d2 isn't trump
-        elif(d1.isTrump and d3.isTrump and d4.isTrump):
-            return self.compareFour(d1.ID, -1, d3.ID, d4.ID)
-        #if d1 isn't trump
-        elif(d2.isTrump and d3.isTrump and d4.isTrump):
-            return self.compareFour(-1, d2.ID, d3.ID, d4.ID)
-        #if d1 and d2
-        elif(d1.isTrump and d2.isTrump):
-            return self.compareTwo(d1.ID, d2.ID)
-        #if d1 and d3
-        elif(d1.isTrump and d3.isTrump):
-            return self.compareThree(d1.ID , -1, d3.ID)
-        #if d1 and d4
-        elif(d1.isTrump and d4.isTrump):
-            return self.compareFour(d1.ID, -1,-1, d4.ID)
-        #if d2 and d3
-        elif(d2.isTrump and d3.isTrump):
-            return self.compareFour(-1,d2.ID,d3.ID,-1)
-        #if d2 and d4
-        elif(d2.isTrump and d4.isTrump):
-            return self.compareFour(-1,d2.ID,-1,d4.ID)
-        #if d3 and d4
-        elif(d3.isTrump and d4.isTrump):
-            
-            return self.compareFour(-1,-1,d3.ID,d4.ID)
-        elif(d1.isTrump):
-            return 1
-        elif(d2.isTrump):
-            return 2
-        elif(d3.isTrump):
-            return 3
-        elif(d4.isTrump):
-            return 4
-
-        # At this point we have no Trump
-        # d1 is always lead
-        if(d1.isDouble):
-            return 1
-        # if d2 is a double and matches the high side of d2 lead it is the highest double 
-        elif d2.isDouble and (d2.highSide == d1.highSide): 
-            return 2
-        elif d3.isDouble and (d3.highSide == d1.highSide):
-            return 3
-        elif d4.isDouble and (d4.highSide == d1.highSide):
-            return 4
-
-        # No doubles matching Lead suit
-        # Compare highside and ID
-        if((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
-            return self.compareFour(d1.ID, d2.ID, d3.ID, d4.ID)
-        #now compare 3
-        # if 1, 2, and 3 have highside but not 4
-        elif((d2.highSide == d1.highSide) and (d3.highSide == d1.highSide)):
-            return self.compareFour(d1.ID, d2.ID, d3.ID, -1)
-        # if 1, 2, and 4 have highside but not 3
-        elif((d2.highSide == d1.highSide) and (d4.highSide == d1.highSide)):
-            return self.compareFour(d1.ID, d2.ID, -1, d4.ID)
-        # if 1 and 2 but not 3 and 4
-        elif(d2.highSide == d1.highSide):
-            return self.compareFour(d1.ID, d2.ID, -1, -1)
-        # if 1 and 3 but not 2 and 4
-        elif(d3.highSide == d1.highSide):
-            return self.compareFour(d1.ID, -1, d3.ID, -1)
-        # if 1 and 4 but not 2 and 3
-        elif(d4.highSide == d1.highSide):
-            return self.compareFour(d1.ID, -1, -1, d4.ID)
-
-        # I think this is everything?
-        # if nothing matches, return 1
-        return 1
-
-    #this will return 1 or 2. Which ever is highest
-    def compareTwo(intOne: int, intTwo: int) -> int:
-        if (intOne > intTwo):
-            return 1
-        else:
-            return 2
-        
-            #this will return 1, 2, or 3. Which ever is the highest
-    def compareFour(intOne: int, intTwo: int, intThree: int, intFour: int):
-        if(intOne > intTwo):
-            if(intOne > intThree):
-                if(intOne > intFour):
+        if(d1 > d2):
+            if(d1 > d3):
+                if(d1 > d4):
                     return 1
                 else:
                     return 4
-            elif(intThree > intFour):
+            elif(d3 > d4):
                 return 3
             else:
                 return 4
-        elif(intTwo > intThree):
-            if(intTwo > intFour):
+        elif(d2 > d3):
+            if(d2 > d4):
                 return 2
             else:
                 return 4
-        elif(intThree > intFour):
+        elif(d3 > d4):
             return 3
         else:
             return 4
-
-    def compareThree(intOne: int, intTwo: int, intThree: int) -> int:
-        if( intOne > intTwo):
-            if(intOne > intThree):
-                return 1
-            else:
-                return 3
-        elif (intTwo > intThree):
-            return 2
-        else:
-            return 3
 
 class Game:
     def __init__(self):
@@ -279,8 +169,6 @@ class Game:
         print("Initializing game...")
         # Create each Domino
         self.dominoSet = DominoFactory.create()
-        for dom in self.dominoSet:
-            print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
 
         # Determine who will go first
         self.current_player_index = random.randint(0, 3)
@@ -288,8 +176,7 @@ class Game:
     
         # Shuffle and deal dominoes
         self.deal_and_shuffle()
-        for dom in self.dominoSet:
-            print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
+        print("Printing Each Players Hand")
         for player in self.players:
             print(player.name)
             for dom in player.hand:

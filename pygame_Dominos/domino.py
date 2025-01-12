@@ -41,8 +41,28 @@ class Domino:
     def __gt__(self, other):
         if not isinstance(other, Domino):
             return NotImplemented
-        # Use the __lt__ method to define the __gt__ method
-        return other < self
+        # self is always most important, so its the "lead domino"
+        
+        outcome = True # default true, because non matching suits
+        # first determine if only one is trump
+        if(self.isTrump != other.isTrump):
+            if self.isTrump:
+                outcome = True
+            else:
+                outcome = False
+        
+        # next determine if "other" matches suit with "self"
+        elif(self.highSide == other.highSide or self.highSide == other.lowSide):
+            if(self.isDouble):
+                outcome = True
+            elif(other.isDouble):
+                outcome = False
+            elif(self.ID > other.ID):
+                outcome = True
+            else:
+                outcome = False
+    
+        return outcome
 
 # create a set of double-6 dominos
 class DominoFactory:
@@ -51,17 +71,13 @@ class DominoFactory:
         domino_set = [None] * 28  # Initialize list with 28 None elements
         id = 27
         for i in range(6, -1, -1):
-            for j in range(6, i - 1, -1):
-                # set features of domino
-                hi = max(i, j)
-                lo = min(i, j)
-                is_double = False
-                if i == j:
-                    is_double = True
-                
-                domino_set[id] = Domino(id, hi, lo, is_double, False)
-                id -= 1
-
+            for j in range(6, -1, -1):
+                if i >= j:
+                    hi = i
+                    lo = j
+                    is_double = i == j
+                    domino_set[id] = Domino(id, hi, lo, is_double, False)
+                    id -= 1
         return domino_set
 
 # Test and print

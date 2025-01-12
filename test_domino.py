@@ -45,6 +45,41 @@ class TestDomino(unittest.TestCase):
         #
 
         # Add more test cases as needed
+    def test_greater_than(self):
+        # Test case where the first domino is less than the second domino
+        domino1 = self.dominoSet[27]  # [6/6]
+        domino2 = self.dominoSet[26]  # [6/5]
+        self.assertTrue(domino1 > domino2)  # [6/6] is not less than [6/5]
+
+        # Test case where the first domino is a double but the second domino is slightly bigger
+        domino1 = self.dominoSet[0]  # [0/0]
+        domino2 = self.dominoSet[1]  # [1/0]
+        self.assertTrue(domino1 > domino2)  # [0/0] is not less than [1/0]
+
+        # Test case where the dominos are not the same suit. 
+        domino1 = self.dominoSet[27]  # [6/6]
+        domino2 = self.dominoSet[14]  # [4/2]
+        self.assertTrue(domino1 > domino2)  # [6/6] is not less than [4/2]
+
+        # test case where the first domino is a trump and the second is a double
+        update_trump(self.dominoSet, 2)
+        domino1 = self.dominoSet[17]  # [5/2] this is a 2 trump, not a 5
+        domino2 = self.dominoSet[20] # [5/5] This is not  a trump
+        self.assertTrue(domino1 > domino2)
+        update_trump(self.dominoSet, 7)
+
+        #
+        domino1 = self.dominoSet[26]  # [5/2] this is a 2 trump, not a 5
+        domino2 = self.dominoSet[25] # [5/5] This is not  a trump
+        self.assertTrue(domino1 > domino2)
+
+        domino1 = self.dominoSet[26]  # [5/2] this is a 2 trump, not a 5
+        domino2 = self.dominoSet[27] # [5/5] This is not  a trump
+        self.assertFalse(domino1 > domino2)
+
+        domino1 = self.dominoSet[27]  # [5/2] this is a 2 trump, not a 5
+        domino2 = self.dominoSet[24] # [5/5] This is not  a trump
+        self.assertTrue(domino1 > domino2)
 
 if __name__ == "__main__":
     unittest.main()

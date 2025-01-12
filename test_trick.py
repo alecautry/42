@@ -38,17 +38,17 @@ class TestTrick(unittest.TestCase):
         dominos = [
             self.dominoSet[26], # [6/5]
             self.dominoSet[25], # [6/4]
-            self.dominoSet[27], # [6/6]
+            self.dominoSet[20], # [5/5]
             self.dominoSet[24]  # [6/3]
         ]
-        self.assertEqual(self.trick.trickWinner(dominos), 3)
+        self.assertEqual(self.trick.trickWinner(dominos), 1)
 
         # Test case where the fourth domino is the winning trump double
         dominos = [
             self.dominoSet[26], # [6/5]
             self.dominoSet[25], # [6/4]
-            self.dominoSet[27], # [6/3]
-            self.dominoSet[24]  # [6/6]
+            self.dominoSet[24], # [6/3]
+            self.dominoSet[27]  # [6/6]
         ]
         self.assertEqual(self.trick.trickWinner(dominos), 4)
 
