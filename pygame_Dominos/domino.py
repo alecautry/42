@@ -1,4 +1,4 @@
-# plain old data struct for Domino class
+# not* plain old data struct for Domino class
 class Domino:
     ID: int
     highSide: int
@@ -12,12 +12,43 @@ class Domino:
         self.lowSide = low
         self.isDouble = double
         self.isTrump = trump
+    # __lt__ and __gt__ are used to compare two Domino objects lt = < gt = >
+    def __lt__(self, other):
+        if not isinstance(other, Domino):
+            return NotImplemented
+        # self is always most important, so its the "lead domino"
+        outcome = False # default true, because non matching suits
+        # first determine if only one is trump
+        if(self.isTrump != other.isTrump):
+            if self.isTrump:
+                outcome = False
+            else:
+                outcome = True
+        
+        # next determine if "other" matches suit with "self"
+        elif(self.highSide == other.highSide or self.highSide == other.lowSide):
+            if(self.isDouble):
+                outcome = False
+            elif(other.isDouble):
+                outcome = True
+            elif(self.ID > other.ID):
+                outcome = False
+            else:
+                outcome = True
+    
+        return outcome
+
+    def __gt__(self, other):
+        if not isinstance(other, Domino):
+            return NotImplemented
+        # Use the __lt__ method to define the __gt__ method
+        return other < self
 
 # create a set of double-6 dominos
 class DominoFactory:
     @staticmethod
     def create() -> list[Domino]:
-        domino_set = []
+        domino_set = [None] * 28  # Initialize list with 28 None elements
         id = 27
         for i in range(6, -1, -1):
             for j in range(6, i - 1, -1):
@@ -28,7 +59,7 @@ class DominoFactory:
                 if i == j:
                     is_double = True
                 
-                domino_set.append(Domino(id, hi, lo, is_double, False))
+                domino_set[id] = Domino(id, hi, lo, is_double, False)
                 id -= 1
 
         return domino_set
