@@ -118,22 +118,22 @@ class Trick:
         if(d1 > d2):
             if(d1 > d3):
                 if(d1 > d4):
-                    return 1
+                    return 0
                 else:
-                    return 4
+                    return 3
             elif(d3 > d4):
-                return 3
-            else:
-                return 4
-        elif(d2 > d3):
-            if(d2 > d4):
                 return 2
             else:
-                return 4
+                return 3
+        elif(d2 > d3):
+            if(d2 > d4):
+                return 1
+            else:
+                return 3
         elif(d3 > d4):
-            return 3
+            return 2
         else:
-            return 4
+            return 3
 
 class Game:
     def __init__(self):
@@ -244,25 +244,36 @@ class Game:
         # the game stops when all dominos have been played
         # the winner is determined if the bidding team makes their bid or not
         for x in range(0, 7):
+            print(f"{self.current_player_index} is the current player index")
+            starting_player_index = self.current_player_index
+            trick_order = []  # Temporary array to store the order of each domino played
             for _ in range(4):
                 player = self.players[self.current_player_index]
                 legal_moves = player.filter_legal_moves(player.hand, self.trick.trick[0] if self.trick.trick else None)
                 domino = player.play(legal_moves)
                 print(f"{player.name} plays domino [{domino.highSide}/{domino.lowSide}][{domino.ID}]")
                 self.trick.trick.append(domino)
+                trick_order.append(self.current_player_index)  # Store the player index
                 self.current_player_index = (self.current_player_index + 1) % 4
                 print(self.current_player_index)
 
-            winner = self.trick.trickWinner(self.trick.trick)
-            print("winner:", winner)
-            team = "Team 1" if winner % 2 == 0 else "Team 2"
-            print(f"Player {winner} wins the trick for {team}!")
-            self.current_player_index = (winner - 1) % 4  # Ensure the index is within the valid range
+            # Print each domino in the trick along with the player index
+            for i, domino in enumerate(self.trick.trick):
+                player_index = trick_order[i]
+                print(f"[{domino.highSide}/{domino.lowSide}][{player_index}]")
+
+            winner_index_in_trick = self.trick.trickWinner(self.trick.trick)
+            print(f"trick_order: {trick_order}")
+            winner_player_index = trick_order[winner_index_in_trick]
+            print("winner:", winner_player_index)
+            team = "Team 1" if winner_player_index % 2 == 0 else "Team 2"
+            print(f"Player {winner_player_index + 1} wins the trick for {team}!")
+            self.current_player_index = winner_player_index  # Set the next starting player to the winner
             self.trick.trick = []
-            if winner == 0 or winner == 2:  # player 1 and 3, Team 1
-                self.teamOneTricks.append(winner)
+            if winner_player_index == 0 or winner_player_index == 2:  # player 1 and 3, Team 1
+                self.teamOneTricks.append(winner_player_index)
             else:  # player 2 and 4, Team 2
-                self.teamTwoTricks.append(winner)
+                self.teamTwoTricks.append(winner_player_index)
 
 
     def calculate_scores(self):
