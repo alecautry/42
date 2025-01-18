@@ -25,23 +25,31 @@ class HumanPlayer:
     def play(self, dominoSet):
         print("Your turn, ", self.name)
         print("Your dominoes:")
-        for dom in dominoSet:
-            print(f"[{dom.highSide}/{dom.lowSide}][{dom.ID}]")
-        dominoID = input("Enter the ID of the domino you want to play: ")
-        for dom in dominoSet:
-            if dom.ID == int(dominoID):
+        for index, dom in enumerate(dominoSet):
+            print(f"{index}: [{dom.highSide}/{dom.lowSide}]")
+        dominoIndex = input("Enter the index of the domino you want to play: ")
+        try:
+            dominoIndex = int(dominoIndex)
+            if 0 <= dominoIndex < len(dominoSet):
+                dom = dominoSet[dominoIndex]
                 self.hand.remove(dom)
                 return dom
-        return None
+            else:
+                print("Invalid index. Please try again.")
+                return self.play(dominoSet)  # Recursively call play to retry
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            return self.play(dominoSet)  # Recursively call play to retry
 
     def filter_legal_moves(self, dominoSet, lead_domino):
-        # Only allow dominoes that match the lead domino's high side
+        # Only allow dominoes that match the lead domino's high side or are trumps if the lead domino is a trump
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
+            if lead_domino.isTrump:
+                legal_moves = [dom for dom in dominoSet if dom.isTrump]
+            else:
+                legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
             if legal_moves:
                 return legal_moves
-            else:
-                return dominoSet
         return dominoSet
     
     def get_bid(self, current_bid):
@@ -84,13 +92,14 @@ class ComputerPlayer:
         return dominoSet[0] if dominoSet else None
 
     def filter_legal_moves(self, dominoSet, lead_domino):
-        # Only allow dominoes that match the lead domino's high side
+        # Only allow dominoes that match the lead domino's high side or are trumps if the lead domino is a trump
         if lead_domino:
-            legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
+            if lead_domino.isTrump:
+                legal_moves = [dom for dom in dominoSet if dom.isTrump]
+            else:
+                legal_moves = [dom for dom in dominoSet if dom.highSide == lead_domino.highSide or dom.lowSide == lead_domino.highSide]
             if legal_moves:
                 return legal_moves
-            else:
-                return dominoSet
         return dominoSet
 
     def get_bid(self, current_bid):
@@ -138,12 +147,15 @@ class Trick:
 class Game:
     def __init__(self):
         self.state = GameState.INIT
-        self.players = [HumanPlayer("Player 1"), ComputerPlayer("Player 2"), HumanPlayer("Player 3"), ComputerPlayer("Player 4")]
+        self.players = [HumanPlayer("Player 1"), ComputerPlayer("Player 2"), ComputerPlayer("Player 3"), ComputerPlayer("Player 4")]
         self.trick = Trick()
         self.teamOneTricks = []
         self.teamTwoTricks = []
         self.dominoSet = []
         self.trump = None
+        self.teamOneScore = 0
+        self.teamTwoScore = 0
+        
 
     def run(self):
         while True:
@@ -176,11 +188,13 @@ class Game:
     
         # Shuffle and deal dominoes
         self.deal_and_shuffle()
-        print("Printing Each Players Hand")
-        for player in self.players:
-            print(player.name)
-            for dom in player.hand:
-                print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
+        #if debug, print each players hand
+        if(DEBUG):
+            print("Printing Each Players Hand")
+            for player in self.players:
+                print(player.name)
+                for dom in player.hand:
+                    print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
 
 
     def bidding_phase(self):
@@ -268,12 +282,29 @@ class Game:
             print("winner:", winner_player_index)
             team = "Team 1" if winner_player_index % 2 == 0 else "Team 2"
             print(f"Player {winner_player_index + 1} wins the trick for {team}!")
+
+            # Update scores
+            if team == "Team 1":
+                self.teamOneScore += 1
+            else:
+                self.teamTwoScore += 1
+
+            # Check for count dominos and update scores
+            for domino in self.trick.trick:
+                if domino.is_count():
+                    if team == "Team 1":
+                        self.teamOneScore += (domino.highSide + domino.lowSide)
+                    else:
+                        self.teamTwoScore += (domino.highSide + domino.lowSide)
+
             self.current_player_index = winner_player_index  # Set the next starting player to the winner
             self.trick.trick = []
             if winner_player_index == 0 or winner_player_index == 2:  # player 1 and 3, Team 1
                 self.teamOneTricks.append(winner_player_index)
             else:  # player 2 and 4, Team 2
                 self.teamTwoTricks.append(winner_player_index)
+
+        print(f"Final Scores - Team 1: {self.teamOneScore}, Team 2: {self.teamTwoScore}")
 
 
     def calculate_scores(self):
@@ -286,5 +317,6 @@ if __name__ == "__main__":
         import test_trick  # Import the test module
         unittest.main(module='test_trick', argv=[sys.argv[0]])  # Run unit tests
     else:
+        DEBUG = True
         game = Game()
         game.run()

@@ -63,6 +63,8 @@ class Domino:
                 outcome = False
     
         return outcome
+    def is_count(self):
+        return (self.highSide + self.lowSide) % 5 == 0
 
 # create a set of double-6 dominos
 class DominoFactory:
