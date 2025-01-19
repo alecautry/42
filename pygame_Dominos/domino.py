@@ -24,7 +24,16 @@ class Domino:
                 outcome = False
             else:
                 outcome = True
-        
+        elif(self.isTrump == other.isTrump):
+            if(self.isDouble):
+                return False
+            elif(other.isDouble):
+                return True
+            elif(self.ID > other.ID):
+                outcome = False
+            else:
+                outcome = True
+            
         # next determine if "other" matches suit with "self"
         elif(self.highSide == other.highSide or self.highSide == other.lowSide):
             if(self.isDouble):
@@ -35,7 +44,6 @@ class Domino:
                 outcome = False
             else:
                 outcome = True
-    
         return outcome
 
     def __gt__(self, other):

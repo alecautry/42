@@ -5,6 +5,8 @@ def update_trump(domino_set, trump):
     for dom in domino_set:
         if dom.highSide == trump or dom.lowSide == trump:
             dom.isTrump = True
+        else:
+            dom.isTrump = False
 
 # 27:[6/6], 26:[6/5], 25:[6/4], 24:[6/3], 23:[6/2], 22:[6/1], 21:[6/0]
 # 20:[5/5], 19:[5/4], 18:[5/3], 17:[5/2], 16:[5/1], 15: 5/0]
@@ -50,8 +52,12 @@ class TestDomino(unittest.TestCase):
         self.assertFalse(domino1 < domino2)
         update_trump(self.dominoSet, 7)
 
-        #
-
+        update_trump(self.dominoSet, 0)
+        # Test case where the first domino is a double but the second domino is slightly bigger
+        domino1 = self.dominoSet[0]  # [0/0]
+        domino2 = self.dominoSet[1]  # [1/0]
+        self.assertTrue(domino2 < domino1)  # [1/0] is less than [0/0]
+        update_trump(self.dominoSet, 7)
         # Add more test cases as needed
     def test_greater_than(self):
         # Test case where the first domino is less than the second domino
@@ -101,17 +107,34 @@ class TestDomino(unittest.TestCase):
                     self.assertTrue(domino1 > domino2)
     
     def test_0_1(self):
-        domino1 = self.dominoSet[1]  # [1/0]
-        for domino in self.dominoSet:
-            domino2 = domino
-            if(domino1 == domino2):
-                continue
-            elif domino2.ID in self.ones_ID:
-                self.assertTrue(domino1 < domino2)
-            else:
-                self.assertFalse(domino1 < domino2)
-                self.assertTrue(domino1 > domino2)
-
+        domino1 = self.dominoSet[1]  # [1/0]'
+        for x in range(0,7):
+            print("x", x)
+            update_trump(self.dominoSet, x)
+            for domino in self.dominoSet:
+                domino2 = domino
+                if(domino1 == domino2):
+                    continue
+                elif(domino1.isTrump == True):
+                    if(domino2.isTrump == True):
+                        # write code to print out the dominos that are here with [high/low][id] format
+                        print("domino1")
+                        print(f"[{domino1.highSide}/{domino1.lowSide}][{domino1.ID}]")
+                        print("domino2")
+                        print(f"[{domino2.highSide}/{domino2.lowSide}][{domino2.ID}]")
+                        
+                        self.assertTrue(domino1 < domino2)
+                    else:
+                        self.assertTrue(domino1 > domino2)
+                elif(domino2.isTrump == True):
+                    self.assertTrue(domino1 < domino2)
+                elif domino2.ID in self.ones_ID:
+                    self.assertTrue(domino1 < domino2)
+                else:
+                    self.assertFalse(domino1 < domino2)
+                    self.assertTrue(domino1 > domino2)
+            update_trump(self.dominoSet, 7)
+        update_trump(self.dominoSet, 7)
                     
 
 if __name__ == "__main__":
