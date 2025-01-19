@@ -65,6 +65,11 @@ class Domino:
         return outcome
     def is_count(self):
         return (self.highSide + self.lowSide) % 5 == 0
+    
+    def ID_lookup(self, high, low):
+        for domino in dominoSet:
+            if domino.highSide == high and domino.lowSide == low:
+                return domino.ID
 
 # create a set of double-6 dominos
 class DominoFactory:

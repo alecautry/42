@@ -18,6 +18,14 @@ class TestDomino(unittest.TestCase):
     def setUp(self):
         self.dominoSet = DominoFactory.create()
         update_trump(self.dominoSet, 7) # trump is empty
+        self.doubles_ID = [0, 2, 5, 9, 14, 20, 27]
+        self.ones_ID = [1, 2, 4, 7, 11, 16, 22]
+        self.twos_ID = [3, 4, 5, 8, 12, 17, 23]
+        self.threes_ID = [6, 7, 8, 9, 13, 18, 24]
+        self.fours_ID = [10, 11, 12, 13, 14, 19, 25]
+        self.fives_ID = [15, 16, 17, 18, 19, 20, 26]
+        self.sixes_ID = [21, 22, 23, 24, 25, 26, 27]
+        
 
     def test_less_than(self):
         # Test case where the first domino is less than the second domino
@@ -80,6 +88,31 @@ class TestDomino(unittest.TestCase):
         domino1 = self.dominoSet[27]  # [5/2] this is a 2 trump, not a 5
         domino2 = self.dominoSet[24] # [5/5] This is not  a trump
         self.assertTrue(domino1 > domino2)
+    
+    def test_all_doubles_gthan(self):
+        
+        for x in range(0,7):
+            for domino in self.dominoSet:
+                domino1 = self.dominoSet[self.doubles_ID[x]]
+                domino2 = domino
+                if(domino1 == domino2):
+                    continue
+                else:
+                    self.assertTrue(domino1 > domino2)
+    
+    def test_0_1(self):
+        domino1 = self.dominoSet[1]  # [1/0]
+        for domino in self.dominoSet:
+            domino2 = domino
+            if(domino1 == domino2):
+                continue
+            elif domino2.ID in self.ones_ID:
+                self.assertTrue(domino1 < domino2)
+            else:
+                self.assertFalse(domino1 < domino2)
+                self.assertTrue(domino1 > domino2)
+
+                    
 
 if __name__ == "__main__":
     unittest.main()
