@@ -72,9 +72,10 @@ class ComputerPlayer:
 
     def play(self, dominoSet):
         print("Computer's turn, ", self.name)
-        print("Computer's dominoes:")
-        for dom in dominoSet:
-            print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
+        if(DEBUG):
+            print("Computer's dominoes:")
+            for dom in dominoSet:
+                print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
         
         # Simple AI logic to select a domino to play
         selected_domino = self.select_domino(dominoSet)
@@ -195,6 +196,7 @@ class Game:
                 print(player.name)
                 for dom in player.hand:
                     print("id:", dom.ID, "hi:", dom.highSide, "lo:", dom.lowSide, "double:", dom.isDouble)
+        print("---------------------------------")
 
 
     def bidding_phase(self):
@@ -202,14 +204,18 @@ class Game:
         bids = []
         bid = 0
 
-        for player in self.players:
+        start_index = self.current_player_index  # Start from the current player index
+
+        for i in range(len(self.players)):
+            player_index = (start_index + i) % len(self.players)
+            player = self.players[player_index]
 
             bid = player.get_bid(bid)
             bids.append(bid)
             print(f"{player.name} bids {bid}")
 
         highest_bid = max(bids)
-        winner_index = bids.index(highest_bid)
+        winner_index = (start_index + bids.index(highest_bid)) % len(self.players)
         print(f"{self.players[winner_index].name} wins the bid with {highest_bid}")
 
         # Winner sets the trump
@@ -217,15 +223,18 @@ class Game:
 
         # Set the current player to the winner of the bid
         self.current_player_index = winner_index
+        print("---------------------------------")
 
 
     def playing_phase(self):
         print("Playing phase...")
         self.play_tricks()
+        print("---------------------------------")
 
     def game_over(self):
         print("Game over!")
         self.calculate_scores()
+        print("---------------------------------")
 
     def deal_and_shuffle(self):
         random.shuffle(self.dominoSet)
@@ -258,8 +267,6 @@ class Game:
         # the game stops when all dominos have been played
         # the winner is determined if the bidding team makes their bid or not
         for x in range(0, 7):
-            print(f"{self.current_player_index} is the current player index")
-            starting_player_index = self.current_player_index
             trick_order = []  # Temporary array to store the order of each domino played
             for _ in range(4):
                 player = self.players[self.current_player_index]
@@ -269,20 +276,18 @@ class Game:
                 self.trick.trick.append(domino)
                 trick_order.append(self.current_player_index)  # Store the player index
                 self.current_player_index = (self.current_player_index + 1) % 4
-                print(self.current_player_index)
 
             # Print each domino in the trick along with the player index
+            print("---------------------------------")
             for i, domino in enumerate(self.trick.trick):
                 player_index = trick_order[i]
                 print(f"[{domino.highSide}/{domino.lowSide}][{player_index}]")
-
+            print("---------------------------------")
             winner_index_in_trick = self.trick.trickWinner(self.trick.trick)
-            print(f"trick_order: {trick_order}")
             winner_player_index = trick_order[winner_index_in_trick]
-            print("winner:", winner_player_index)
             team = "Team 1" if winner_player_index % 2 == 0 else "Team 2"
             print(f"Player {winner_player_index + 1} wins the trick for {team}!")
-
+            print("---------------------------------")
             # Update scores
             if team == "Team 1":
                 self.teamOneScore += 1
@@ -317,6 +322,6 @@ if __name__ == "__main__":
         import test_trick  # Import the test module
         unittest.main(module='test_trick', argv=[sys.argv[0]])  # Run unit tests
     else:
-        DEBUG = True
+        DEBUG = False
         game = Game()
         game.run()
