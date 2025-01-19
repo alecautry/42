@@ -117,6 +117,7 @@ class ComputerPlayer:
 class Trick:
     def __init__(self):
         self.trick = []
+        self.playerIndex = []
 
     def trickWinner(self, theTrick): # TODO
         #  trickWinner2(d1: Domino, d2: Domino, d3: Domino, d4: Domino) -> int:
@@ -144,6 +145,11 @@ class Trick:
             return 2
         else:
             return 3
+    def printTrick(self):
+        for domino in self.trick:
+            i = 0
+            print(f"[{domino.highSide}/{domino.lowSide}][{self.playerIndex[i]}]")
+            i += 1
 
 class Game:
     def __init__(self):
@@ -274,9 +280,10 @@ class Game:
                 domino = player.play(legal_moves)
                 print(f"{player.name} plays domino [{domino.highSide}/{domino.lowSide}][{domino.ID}]")
                 self.trick.trick.append(domino)
+                self.trick.playerIndex.append(self.current_player_index)
                 trick_order.append(self.current_player_index)  # Store the player index
                 self.current_player_index = (self.current_player_index + 1) % 4
-
+            
             # Print each domino in the trick along with the player index
             print("---------------------------------")
             for i, domino in enumerate(self.trick.trick):
@@ -310,6 +317,8 @@ class Game:
                 self.teamTwoTricks.append(winner_player_index)
 
         print(f"Final Scores - Team 1: {self.teamOneScore}, Team 2: {self.teamTwoScore}")
+    
+
 
 
     def calculate_scores(self):
