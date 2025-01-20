@@ -507,8 +507,9 @@ class Game:
         # a winner is determined and the next player plays
         # the game stops when all dominos have been played
         # the winner is determined if the bidding team makes their bid or not
-        playedDominos = []
+        
         for x in range(0, 7):
+            playedDominos = []
             trick_order = []  # Temporary array to store the order of each domino played
             for _ in range(4):
                 player = self.players[self.current_player_index]
