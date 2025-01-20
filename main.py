@@ -2,7 +2,31 @@ import random
 from pygame_Dominos.domino import *
 import unittest
 import sys
+import pygame
 
+# Initialize Pygame
+pygame.init()
+
+# Set up display
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("42 Domino Game")
+
+# Define colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+DARK_RED = (139, 0, 0)
+LIGHT_BLUE = (173, 216, 230)
+
+# Define standard coordinates for drawing dominos in the middle of the screen
+MIDDLE_X = 250
+MIDDLE_Y = 200
+DOMINO_WIDTH = 50
+DOMINO_HEIGHT = 50
+DOMINO_SPACING = 60
 
 class GameState:
     # Shuffle and deal dominoes
@@ -17,30 +41,117 @@ class GameState:
     # Game is over: calculate scores and determine winner
     GAME_OVER = "GAME_OVER"
 
+    QUIT = "QUIT"
+
 class HumanPlayer:
     def __init__(self, name):
         self.name = name
         self.hand = []
 
-    def play(self, dominoSet):
-        print("Your turn, ", self.name)
-        print("Your dominoes:")
-        for index, dom in enumerate(dominoSet):
-            print(f"{index}: [{dom.highSide}/{dom.lowSide}]")
-        dominoIndex = input("Enter the index of the domino you want to play: ")
-        try:
-            dominoIndex = int(dominoIndex)
-            if 0 <= dominoIndex < len(dominoSet):
-                dom = dominoSet[dominoIndex]
-                self.hand.remove(dom)
-                return dom
-            else:
-                print("Invalid index. Please try again.")
+    def play(self, dominoSet, playedDominos=None):
+        if not TEXT_INPUT:
+            selected_domino = self.display_play_popup(dominoSet, playedDominos)
+        else:
+            print("Your turn, ", self.name)
+            print("Your dominoes:")
+            for index, dom in enumerate(dominoSet):
+                print(f"{index}: [{dom.highSide}/{dom.lowSide}]")
+            dominoIndex = input("Enter the index of the domino you want to play: ")
+            try:
+                dominoIndex = int(dominoIndex)
+                if 0 <= dominoIndex < len(dominoSet):
+                    selected_domino = dominoSet[dominoIndex]
+                else:
+                    print("Invalid index. Please try again.")
+                    return self.play(dominoSet)  # Recursively call play to retry
+            except ValueError:
+                print("Invalid input. Please enter a number.")
                 return self.play(dominoSet)  # Recursively call play to retry
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-            return self.play(dominoSet)  # Recursively call play to retry
 
+        self.hand.remove(selected_domino)
+        return selected_domino
+
+    def display_play_popup(self, dominoSet, playedDominos):
+        selected_domino = None
+        running = True
+        font = pygame.font.Font(None, 36)
+        button_rects = []
+
+        # Determine legal moves
+        lead_domino = playedDominos[0] if playedDominos else None
+        legal_moves = self.filter_legal_moves(self.hand, lead_domino)
+
+        # Create buttons for legal dominos in hand
+        for i, dom in enumerate(self.hand):
+            if dom in legal_moves:
+                button_rects.append((pygame.Rect(MIDDLE_X + i * DOMINO_SPACING, 400, DOMINO_WIDTH, DOMINO_HEIGHT), dom))
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for rect, dom in button_rects:
+                        if rect.collidepoint(event.pos):
+                            selected_domino = dom
+                            running = False
+
+            # Clear the middle area
+            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X, MIDDLE_Y, 300, 200))
+
+            # Draw played dominos
+            for i, dom in enumerate(playedDominos):
+                text = font.render(f"[{dom.highSide}/{dom.lowSide}]", True, BLACK)
+                screen.blit(text, (MIDDLE_X + i * DOMINO_SPACING, MIDDLE_Y))
+
+            # Draw all dominos in hand
+            for i, dom in enumerate(self.hand):
+                rect = pygame.Rect(MIDDLE_X + i * DOMINO_SPACING, 400, DOMINO_WIDTH, DOMINO_HEIGHT)
+                if rect.collidepoint(pygame.mouse.get_pos()):
+                    color = RED if dom in legal_moves else BLUE
+                else:
+                    color = BLUE if dom in legal_moves else BLUE
+                pygame.draw.rect(screen, color, rect)
+                text = font.render(f"[{dom.highSide}/{dom.lowSide}]", True, WHITE)
+                screen.blit(text, rect.topleft)
+
+            pygame.display.flip()
+        button_rects = []  # Clear button rects after selection
+        return selected_domino
+
+    def display_trump_popup(self):
+        selected_trump = None
+        running = True
+        font = pygame.font.Font(None, 36)
+        button_rects = []
+
+        # Create buttons for trump selection (0-6)
+        for i in range(7):
+            button_rects.append(pygame.Rect(100 + i * 60, 300, 50, 50))
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for i, rect in enumerate(button_rects):
+                        if rect.collidepoint(event.pos):
+                            selected_trump = i
+                            running = False
+
+            screen.fill(WHITE)
+
+            # Draw buttons for trump selection
+            for i, rect in enumerate(button_rects):
+                pygame.draw.rect(screen, BLUE if rect.collidepoint(pygame.mouse.get_pos()) else RED, rect)
+                text = font.render(str(i), True, WHITE)
+                screen.blit(text, rect.topleft)
+
+            pygame.display.flip()
+
+        return selected_trump
     def filter_legal_moves(self, dominoSet, lead_domino):
         # Only allow dominoes that match the lead domino's high side or are trumps if the lead domino is a trump
         if lead_domino:
@@ -53,6 +164,8 @@ class HumanPlayer:
         return dominoSet
     
     def get_bid(self, current_bid):
+        if not TEXT_INPUT:
+            return self.display_bid_popup(current_bid)
         legalBid = False
         while (not legalBid):
             bid = int(input(f"{self.name}, enter your bid: "))
@@ -65,12 +178,54 @@ class HumanPlayer:
             
         return bid
 
+    def display_bid_popup(self, current_bid):
+        bid = 0
+        running = True
+        font = pygame.font.Font(None, 36)
+        button_rects = []
+
+        # Create buttons for bids
+        for i in range(0, 43, 5):
+            button_rects.append(pygame.Rect(100 + (i // 5) * 60, 300, 50, 50))
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for i, rect in enumerate(button_rects):
+                        if rect.collidepoint(event.pos):
+                            bid = i * 5
+                            running = False
+
+            #screen.fill(WHITE)
+
+            # Draw buttons
+            for i, rect in enumerate(button_rects):
+                pygame.draw.rect(screen, BLUE if rect.collidepoint(pygame.mouse.get_pos()) else RED, rect)
+                text = font.render(str(i * 5), True, WHITE)
+                screen.blit(text, rect.topleft)
+
+            pygame.display.flip()
+
+        return bid
+
 class ComputerPlayer:
     def __init__(self, name):
         self.name = name
         self.hand = []
+        self.suit_counts = [0] * 7  # Initialize suit counts
 
-    def play(self, dominoSet):
+    def update_suit_counts(self):
+        # Reset suit counts
+        self.suit_counts = [0] * 7
+        # Count the number of each suit in hand
+        for domino in self.hand:
+            self.suit_counts[domino.highSide] += 1
+            self.suit_counts[domino.lowSide] += 1
+
+    def play(self, dominoSet, playedDominos):
         print("Computer's turn, ", self.name)
         if(DEBUG):
             print("Computer's dominoes:")
@@ -81,6 +236,8 @@ class ComputerPlayer:
         selected_domino = self.select_domino(dominoSet)
         if selected_domino:
             self.hand.remove(selected_domino)
+            # Draw the played domino on the screen
+            self.draw_played_domino(selected_domino, playedDominos)
         return selected_domino
 
     def select_domino(self, dominoSet):
@@ -104,15 +261,52 @@ class ComputerPlayer:
         return dominoSet
 
     def get_bid(self, current_bid):
-        if(current_bid == 42):
-            return 42
-        
-        bid = random.randint(current_bid+1, 42)  # Simple AI for bidding (30 is the min)
+        if current_bid == 42:
+            return 0
+
+        # Update suit counts
+        self.update_suit_counts()
+
+        # Determine the bid based on suit counts
+        max_suit_count = max(self.suit_counts)
+        if max_suit_count == 7:
+            bid = 42
+        elif max_suit_count == 6:
+            bid = random.randint(36, 38)
+        elif max_suit_count == 5:
+            bid = random.randint(33, 35)
+        elif max_suit_count == 4:
+            bid = random.randint(30, 32)
+        else:
+            bid = random.randint(0, 42)  # Simple AI for bidding
+
+        # If calculated bid is less than current bid, pass (bid = 0)
+        if bid < current_bid and bid < 30:
+            bid = 0
+
         return bid
-    
+
     def set_trump(self):
-        trump = random.randint(0,6)
-        return trump
+        # Set the trump based on the suit with the highest count
+        self.update_suit_counts()
+        self.trump = self.suit_counts.index(max(self.suit_counts))
+        return self.trump
+    
+    def draw_played_domino(self, selected_domino, playedDominos):
+        font = pygame.font.Font(None, 36)
+        # Clear the middle area
+        pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X, MIDDLE_Y, 300, 200))
+
+        # Draw played dominos
+        for i, dom in enumerate(playedDominos):
+            text = font.render(f"[{dom.highSide}/{dom.lowSide}]", True, BLACK)
+            screen.blit(text, (MIDDLE_X + i * DOMINO_SPACING, MIDDLE_Y))
+
+        # Draw the selected domino
+        text = font.render(f"[{selected_domino.highSide}/{selected_domino.lowSide}]", True, BLACK)
+        screen.blit(text, (MIDDLE_X + len(playedDominos) * DOMINO_SPACING, MIDDLE_Y))
+
+        pygame.display.flip()
 
 class Trick:
     def __init__(self):
@@ -162,10 +356,19 @@ class Game:
         self.trump = None
         self.teamOneScore = 0
         self.teamTwoScore = 0
+        self.font = pygame.font.Font(None, 25)  # Initialize font
+        
         
 
     def run(self):
-        while True:
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            if self.state != GameState.QUIT:
+                screen.fill(WHITE)
+
             if self.state == GameState.INIT:
                 self.initialize_game()
                 self.state = GameState.BID
@@ -180,9 +383,14 @@ class Game:
 
             elif self.state == GameState.GAME_OVER:
                 self.game_over()
-                break
+            elif self.state == GameState.QUIT:
+                running = False
 
-        input("Press Enter to exit...")
+            self.draw_game_state()
+            pygame.display.flip()
+
+        
+        pygame.quit()
 
     def initialize_game(self):
         print("Initializing game...")
@@ -212,9 +420,17 @@ class Game:
 
         start_index = self.current_player_index  # Start from the current player index
 
+        font = pygame.font.Font(None, 48)  # Font for the title
+
         for i in range(len(self.players)):
             player_index = (start_index + i) % len(self.players)
             player = self.players[player_index]
+
+            # Draw the title "Bidding Phase"
+            screen.fill(WHITE)
+            text = font.render("Bidding Phase", True, BLACK)
+            screen.blit(text, (screen_width // 2 - text.get_width() // 2, 50))
+            pygame.display.flip()
 
             bid = player.get_bid(bid)
             bids.append(bid)
@@ -240,6 +456,25 @@ class Game:
     def game_over(self):
         print("Game over!")
         self.calculate_scores()
+        font = pygame.font.Font(None, 36)
+        quit_button = pygame.Rect(screen_width // 2 - 50, screen_height // 2 - 25, 100, 50)
+
+        while self.state == GameState.GAME_OVER:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.state = GameState.QUIT
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if quit_button.collidepoint(event.pos):
+                        self.state = GameState.QUIT
+
+            # Draw the current game state
+            self.draw_game_state()
+
+            # Draw the quit button on top
+            pygame.draw.rect(screen, RED if quit_button.collidepoint(pygame.mouse.get_pos()) else BLUE, quit_button)
+            text = font.render("Quit", True, WHITE)
+            screen.blit(text, (quit_button.x + 20, quit_button.y + 10))
+            pygame.display.flip()
         print("---------------------------------")
 
     def deal_and_shuffle(self):
@@ -255,7 +490,7 @@ class Game:
     def set_trump(self, winner_index):
         # Ask the winner to set the trump
         if isinstance(self.players[winner_index], HumanPlayer):
-            self.trump = int(input(f"{self.players[winner_index].name}, set the trump (0-6): "))
+            self.trump = self.players[winner_index].display_trump_popup()
         else:
             self.trump = self.players[winner_index].set_trump()
         print(f"Trump is set to {self.trump}")
@@ -272,18 +507,27 @@ class Game:
         # a winner is determined and the next player plays
         # the game stops when all dominos have been played
         # the winner is determined if the bidding team makes their bid or not
+        playedDominos = []
         for x in range(0, 7):
             trick_order = []  # Temporary array to store the order of each domino played
             for _ in range(4):
                 player = self.players[self.current_player_index]
                 legal_moves = player.filter_legal_moves(player.hand, self.trick.trick[0] if self.trick.trick else None)
-                domino = player.play(legal_moves)
+                domino = player.play(legal_moves, playedDominos)
+                playedDominos.append(domino)
                 print(f"{player.name} plays domino [{domino.highSide}/{domino.lowSide}][{domino.ID}]")
                 self.trick.trick.append(domino)
                 self.trick.playerIndex.append(self.current_player_index)
                 trick_order.append(self.current_player_index)  # Store the player index
                 self.current_player_index = (self.current_player_index + 1) % 4
-            
+
+                # Draw the current game state
+                self.draw_game_state()
+                pygame.display.flip()
+
+                # Wait for a short period to show the played domino
+                pygame.time.wait(500)  # Adjust this value to change the delay (500 milliseconds = 0.5 seconds)
+
             # Print each domino in the trick along with the player index
             print("---------------------------------")
             for i, domino in enumerate(self.trick.trick):
@@ -310,11 +554,19 @@ class Game:
                         self.teamTwoScore += (domino.highSide + domino.lowSide)
 
             self.current_player_index = winner_player_index  # Set the next starting player to the winner
-            self.trick.trick = []
+
             if winner_player_index == 0 or winner_player_index == 2:  # player 1 and 3, Team 1
-                self.teamOneTricks.append(winner_player_index)
+                self.teamOneTricks.append(self.trick.trick.copy())
             else:  # player 2 and 4, Team 2
-                self.teamTwoTricks.append(winner_player_index)
+                self.teamTwoTricks.append(self.trick.trick.copy())
+            self.trick.trick = []
+
+            # Clear the middle area
+            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X, MIDDLE_Y, 300, 200))
+
+            # Draw the current teams' tricks
+            self.draw_teams_tricks()
+            playedDominos = []
 
         print(f"Final Scores - Team 1: {self.teamOneScore}, Team 2: {self.teamTwoScore}")
     
@@ -325,12 +577,47 @@ class Game:
         # Calculate scores and determine the winner
         pass
 
+    def draw_teams_tricks(self):
+        screen.fill(WHITE)
+
+        font = pygame.font.Font(None, 36)
+        title_font = pygame.font.Font(None, 48)
+
+        # Draw Team 1's title
+        text = title_font.render("Team 1", True, BLACK)
+        screen.blit(text, (50, 10))
+
+        # Draw Team 1's dominos on the left
+        y_offset = 50
+        for trick in self.teamOneTricks:
+            for i, dom in enumerate(trick):
+                text = self.font.render(f"[{dom.highSide}/{dom.lowSide}]", True, BLACK)
+                screen.blit(text, (50 + i * 50, y_offset))  # Reduced horizontal spacing
+            y_offset += 50  # Adjust spacing between tricks
+
+        # Draw Team 2's title
+        text = title_font.render("Team 2", True, BLACK)
+        screen.blit(text, (screen_width - 250, 10))
+
+        # Draw Team 2's dominos on the right
+        y_offset = 50
+        for trick in self.teamTwoTricks:
+            for i, dom in enumerate(trick):
+                text = self.font.render(f"[{dom.highSide}/{dom.lowSide}]", True, BLACK)
+                screen.blit(text, (screen_width - 250 + i * 50, y_offset))  # Reduced horizontal spacing
+            y_offset += 50  # Adjust spacing between tricks
+
+        pygame.display.flip()
+    
+    def draw_game_state(self):
+        pass
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         import test_trick  # Import the test module
         unittest.main(module='test_trick', argv=[sys.argv[0]])  # Run unit tests
     else:
+        TEXT_INPUT = False
         DEBUG = False
         game = Game()
         game.run()
