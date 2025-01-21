@@ -1,6 +1,8 @@
 import socket
 import threading
 
+#Public Ip Address: 76.187.205.244
+
 class GameServer:
     def __init__(self, host='localhost', port=12345):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
