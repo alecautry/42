@@ -18,6 +18,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 DARK_RED = (139, 0, 0)
 LIGHT_BLUE = (173, 216, 230)
 
@@ -27,8 +28,59 @@ MIDDLE_Y = 200
 DOMINO_WIDTH = 50
 DOMINO_HEIGHT = 50
 DOMINO_SPACING = 60
+class Button:
+    def __init__(
+        self, 
+        x, 
+        y, 
+        width, 
+        height, 
+        text, 
+        font, 
+        bg_color, 
+        text_color, 
+        highlight_color=None, 
+        image=None
+    ):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = font
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.highlight_color = highlight_color
+        self.image = image
+
+    def draw(self, screen):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.highlight_color and self.rect.collidepoint(mouse_pos):
+            color = self.highlight_color
+        else:
+            color = self.bg_color
+
+        pygame.draw.rect(screen, color, self.rect)
+
+        if self.image:
+            # Draw sprite centered in the button
+            img_rect = self.image.get_rect(center=self.rect.center)
+            screen.blit(self.image, img_rect)
+        else:
+            # Draw text if no sprite
+            text_surface = self.font.render(self.text, True, self.text_color)
+            screen.blit(
+                text_surface, 
+                (
+                    self.rect.x + (self.rect.width - text_surface.get_width()) // 2,
+                    self.rect.y + (self.rect.height - text_surface.get_height()) // 2
+                )
+            )
+
+    def collidepoint(self, pos):
+        return self.rect.collidepoint(pos)
 
 class GameState:
+    # Main Menu
+    MAIN_MENU = "MAIN_MENU"
+
     # Shuffle and deal dominoes
     INIT = "INIT"
 
@@ -152,6 +204,7 @@ class HumanPlayer:
             pygame.display.flip()
 
         return selected_trump
+    
     def filter_legal_moves(self, dominoSet, lead_domino):
         # Only allow dominoes that match the lead domino's high side or are trumps if the lead domino is a trump
         if lead_domino:
@@ -182,11 +235,11 @@ class HumanPlayer:
         bid = 0
         running = True
         font = pygame.font.Font(None, 36)
-        button_rects = []
 
-        # Create buttons for bids
-        for i in range(0, 43, 5):
-            button_rects.append(pygame.Rect(100 + (i // 5) * 60, 300, 50, 50))
+        pass_button = Button(100, 300, 80, 50, "Pass", font, RED, WHITE, highlight_color=GREEN)
+        up_button = Button(200, 300, 80, 50, "Up", font, RED, WHITE, highlight_color=GREEN)
+        down_button = Button(300, 300, 80, 50, "Down", font, RED, WHITE, highlight_color=GREEN)
+        enter_button = Button(400, 300, 80, 50, "Enter", font, RED, WHITE, highlight_color=GREEN)
 
         while running:
             for event in pygame.event.get():
@@ -194,18 +247,31 @@ class HumanPlayer:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    for i, rect in enumerate(button_rects):
-                        if rect.collidepoint(event.pos):
-                            bid = i * 5
-                            running = False
+                    if pass_button.collidepoint(event.pos):
+                        bid = 0
+                        running = False
+                    elif up_button.collidepoint(event.pos):
+                        if bid == 0:
+                            bid = 30
+                        elif 30 <= bid < 42:
+                            bid += 1
+                    elif down_button.collidepoint(event.pos):
+                        if 31 <= bid <= 42:
+                            bid -= 1
+                        elif bid == 30:
+                            bid = 0
+                    elif enter_button.collidepoint(event.pos):
+                        running = False
 
-            #screen.fill(WHITE)
+            screen.fill(WHITE)
 
-            # Draw buttons
-            for i, rect in enumerate(button_rects):
-                pygame.draw.rect(screen, BLUE if rect.collidepoint(pygame.mouse.get_pos()) else RED, rect)
-                text = font.render(str(i * 5), True, WHITE)
-                screen.blit(text, rect.topleft)
+            pass_button.draw(screen)
+            up_button.draw(screen)
+            down_button.draw(screen)
+            enter_button.draw(screen)
+
+            bid_text = font.render(f"Current Bid: {bid}", True, BLACK)
+            screen.blit(bid_text, (100, 250))
 
             pygame.display.flip()
 
@@ -347,7 +413,7 @@ class Trick:
 
 class Game:
     def __init__(self):
-        self.state = GameState.INIT
+        self.state = GameState.MAIN_MENU
         self.players = [HumanPlayer("Player 1"), ComputerPlayer("Player 2"), ComputerPlayer("Player 3"), ComputerPlayer("Player 4")]
         self.trick = Trick()
         self.teamOneTricks = []
@@ -366,8 +432,13 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+            
             if self.state != GameState.QUIT:
                 screen.fill(WHITE)
+            
+            if self.state == GameState.MAIN_MENU:
+                self.main_menu()
 
             if self.state == GameState.INIT:
                 self.initialize_game()
@@ -391,6 +462,49 @@ class Game:
 
         
         pygame.quit()
+
+    def draw_text(self, text, font, color, surface, x, y):
+        textobj = font.render(text, 1, color)
+        textrect = textobj.get_rect()
+        textrect.center = (x, y)
+        surface.blit(textobj, textrect)
+
+
+    def main_menu(self):
+        running = True
+        while running:
+            screen.fill((0,0,0))
+
+            self.draw_text("42 Domino Game", self.font, (255, 255, 255), screen,  400, 100)
+
+            mx, my = pygame.mouse.get_pos()
+            button_start = pygame.Rect(300, 200, 200, 50)
+            button_quit = pygame.Rect(300, 300, 200, 50)
+
+            if button_start.collidepoint((mx, my)):
+                if click:
+                    game.state = GameState.INIT
+                    running = False
+            if button_quit.collidepoint((mx, my)):
+                if click:
+                    game.state = GameState.QUIT
+                    running = False
+            
+            pygame.draw.rect(screen, (0, 0 ,255), button_start)
+            self.draw_text('Start', self.font, (255, 255, 255), screen, 400, 225)
+            pygame.draw.rect(screen, (255, 0 , 0), button_quit)
+            self.draw_text('Quit', self.font, (255, 255, 255), screen, 400, 325)
+
+            click = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        click = True
+            
+            pygame.display.update()
+
 
     def initialize_game(self):
         print("Initializing game...")

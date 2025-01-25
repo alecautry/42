@@ -2,9 +2,10 @@ import socket
 import threading
 
 #Public Ip Address: 76.187.205.244
+# My pc ip address: 192.168.0.209
 
 class GameClient:
-    def __init__(self, host='localhost', port=12345):
+    def __init__(self, host='192.168.0.209', port=25565):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host, port))
 
