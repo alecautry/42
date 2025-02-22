@@ -6,8 +6,9 @@ from constants import *
 
 TEXT_INPUT = False
 class HumanPlayer:
-    def __init__(self, name):
+    def __init__(self, name, position):
         self.name = name
+        self.position = position
         self.hand = []
 
     def play(self, dominoSet, playedDominos=None):
@@ -39,7 +40,7 @@ class HumanPlayer:
         font = pygame.font.Font(None, 36)
         button_rects = []
 
-        # Create buttons for all dominos in hand
+        # Create buttons for legal dominos in hand
         for i, dom in enumerate(self.hand):
             image_path = f"assets/domino_{dom.ID}_{dom.highSide}_{dom.lowSide}.png"
             image = pygame.image.load(image_path)
@@ -47,11 +48,14 @@ class HumanPlayer:
             col = i % 4
             x = MIDDLE_X_HAND + col * DOMINO_SPACING_X
             y = 400 + row * DOMINO_SPACING_Y
-            button = Button(
-                x, y, DOMINO_WIDTH, DOMINO_HEIGHT,
-                "", font, BLUE, WHITE, highlight_color=RED, image=image
-            )
-            button_rects.append((button, dom))
+            if dom in dominoSet:
+                button = Button(
+                    x, y, DOMINO_WIDTH, DOMINO_HEIGHT,
+                    "", font, BLUE, WHITE, highlight_color=RED, image=image
+                )
+                button_rects.append((button, dom))
+            else:
+                screen.blit(image, (x, y))
 
         while running:
             for event in pygame.event.get():
@@ -64,22 +68,8 @@ class HumanPlayer:
                             selected_domino = dom
                             running = False
 
-            # Clear the middle area
-            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X, MIDDLE_Y, 300, 200))
-
-            # # Draw played dominos in a specific pattern
-            # positions = [
-            #     (MIDDLE_X - DOMINO_SPACING_X, MIDDLE_Y),  # Left
-            #     (MIDDLE_X, MIDDLE_Y - DOMINO_SPACING_Y),  # Centered above
-            #     (MIDDLE_X + DOMINO_SPACING_X, MIDDLE_Y),  # Right
-            #     (MIDDLE_X, MIDDLE_Y + DOMINO_SPACING_Y)   # Centered below
-            # ]
-            # for i, dom in enumerate(playedDominos):
-            #     if i < len(positions):
-            #         x, y = positions[i]
-            #         image_path = f"assets/domino_{dom.ID}_{dom.highSide}_{dom.lowSide}.png"
-            #         image = pygame.image.load(image_path)
-            #         screen.blit(image, (x, y))
+            # Clear the hand area
+            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X_HAND - 50, 400 - 50, 800, 200))
 
             # Draw all dominos in hand
             for button, dom in button_rects:
@@ -87,6 +77,7 @@ class HumanPlayer:
 
             pygame.display.flip()
         button_rects = []  # Clear button rects after selection
+        self.hand.remove(selected_domino)  # Remove the selected domino from the player's hand
         return selected_domino
 
     def display_trump_popup(self):
@@ -158,6 +149,7 @@ class HumanPlayer:
         down_button = Button(300, 300, 80, 50, "Down", font, RED, WHITE, highlight_color=GREEN)
         enter_button = Button(400, 300, 80, 50, "Enter", font, RED, WHITE, highlight_color=GREEN)
 
+        
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -181,11 +173,12 @@ class HumanPlayer:
                         running = False
 
             screen.fill(WHITE)
-
+            self.draw_hand()
             pass_button.draw(screen)
             up_button.draw(screen)
             down_button.draw(screen)
             enter_button.draw(screen)
+           
 
             bid_text = font.render(f"Current Bid: {bid}", True, BLACK)
             screen.blit(bid_text, (100, 250))
@@ -194,10 +187,34 @@ class HumanPlayer:
 
         return bid
 
+    def draw_hand(self):
+        font = pygame.font.Font(None, 36)
+        dom_rects = []
+
+        # Clear the hand area
+        pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X_HAND - 50, 400 - 50, 800, 200))
+
+        # Create rects for all dominos in hand
+        for i, dom in enumerate(self.hand):
+            image_path = f"assets/domino_{dom.ID}_{dom.highSide}_{dom.lowSide}.png"
+            image = pygame.image.load(image_path)
+            image = pygame.transform.scale(image, (DOMINO_WIDTH, DOMINO_HEIGHT))  # Scale the image
+            row = i // 4
+            col = i % 4
+            x = MIDDLE_X_HAND + col * DOMINO_SPACING_X
+            y = 400 + row * DOMINO_SPACING_Y
+            dom_rects.append((image, pygame.Rect(x, y, DOMINO_WIDTH, DOMINO_HEIGHT)))
+
+        # Draw all dominos in hand
+        for image, rect in dom_rects:
+            screen.blit(image, rect)
+
+
 class ComputerPlayer:
-    def __init__(self, name):
+    def __init__(self, name, position):
         self.name = name
         self.hand = []
+        self.position = position
         self.suit_counts = [0] * 7  # Initialize suit counts
 
     def update_suit_counts(self):
@@ -219,37 +236,7 @@ class ComputerPlayer:
         selected_domino = self.select_domino(dominoSet)
         if selected_domino:
             self.hand.remove(selected_domino)
-            # Draw the played domino on the screen
-            self.draw_played_domino(selected_domino, playedDominos)
         return selected_domino
-
-    def draw_played_domino(self, selected_domino, playedDominos):
-        font = pygame.font.Font(None, 36)
-        # Clear the middle area
-        pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X, MIDDLE_Y, 300, 200))
-
-        # Draw played dominos in a specific pattern
-        positions = [
-            (MIDDLE_X - DOMINO_SPACING_X, MIDDLE_Y),  # Left
-            (MIDDLE_X, MIDDLE_Y - DOMINO_SPACING_Y),  # Centered above
-            (MIDDLE_X + DOMINO_SPACING_X, MIDDLE_Y),  # Right
-            (MIDDLE_X, MIDDLE_Y + DOMINO_SPACING_Y)   # Centered below
-        ]
-        for i, dom in enumerate(playedDominos):
-            if i < len(positions):
-                x, y = positions[i]
-                image_path = f"assets/domino_{dom.ID}_{dom.highSide}_{dom.lowSide}.png"
-                image = pygame.image.load(image_path)
-                screen.blit(image, (x, y))
-
-        # Draw the selected domino
-        if len(playedDominos) < len(positions):
-            x, y = positions[len(playedDominos)]
-            image_path = f"assets/domino_{selected_domino.ID}_{selected_domino.highSide}_{selected_domino.lowSide}.png"
-            image = pygame.image.load(image_path)
-            screen.blit(image, (x, y))
-
-        pygame.display.flip()
 
     def select_domino(self, dominoSet):
         # Placeholder for AI logic to select a domino
@@ -302,4 +289,3 @@ class ComputerPlayer:
         self.update_suit_counts()
         self.trump = self.suit_counts.index(max(self.suit_counts))
         return self.trump
-  

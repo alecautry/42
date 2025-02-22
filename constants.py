@@ -4,8 +4,8 @@ import pygame
 pygame.init()
 
 # Set up display
-screen_width = 800
-screen_height = 600
+screen_width = 800  # 800
+screen_height = 600 # 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("42 Domino Game")
 
@@ -18,14 +18,18 @@ GREEN = (0, 255, 0)
 DARK_RED = (139, 0, 0)
 LIGHT_BLUE = (173, 216, 230)
 
+# Define scale factor based on screen width and height
+SCALE_FACTOR_X = screen_width / 800
+SCALE_FACTOR_Y = screen_height / 600
+
 # Define standard coordinates for drawing dominos in the middle of the screen
-MIDDLE_X_HAND = 150
-MIDDLE_X = 350
-MIDDLE_Y = 200
-DOMINO_WIDTH = 147
-DOMINO_HEIGHT = 67
-DOMINO_SPACING_X = 157
-DOMINO_SPACING_Y = 77
+MIDDLE_X_HAND = int(150 * SCALE_FACTOR_X)
+MIDDLE_X = int(350 * SCALE_FACTOR_X)
+MIDDLE_Y = int(200 * SCALE_FACTOR_Y)
+DOMINO_WIDTH = int(147 * SCALE_FACTOR_X)
+DOMINO_HEIGHT = int(67 * SCALE_FACTOR_Y)
+DOMINO_SPACING_X = int(157 * SCALE_FACTOR_X)
+DOMINO_SPACING_Y = int(77 * SCALE_FACTOR_Y)
 
 TEXT_INPUT = False
 DEBUG = False
