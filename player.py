@@ -3,6 +3,7 @@ import random
 import sys
 from button import Button
 from constants import *
+from PlayerHandSurface import PlayerHandSurface
 
 TEXT_INPUT = False
 class HumanPlayer:
@@ -10,6 +11,7 @@ class HumanPlayer:
         self.name = name
         self.position = position
         self.hand = []
+        self.playerHandSurface = PlayerHandSurface(1920, 200)  # Initialize PlayerHandSurface
 
     def play(self, dominoSet, playedDominos=None):
         if not TEXT_INPUT:
@@ -31,7 +33,7 @@ class HumanPlayer:
                 print("Invalid input. Please enter a number.")
                 return self.play(dominoSet)  # Recursively call play to retry
 
-        self.hand.remove(selected_domino)
+
         return selected_domino
 
     def display_play_popup(self, dominoSet, playedDominos):
@@ -47,7 +49,7 @@ class HumanPlayer:
             row = i // 4
             col = i % 4
             x = MIDDLE_X_HAND + col * DOMINO_SPACING_X
-            y = 400 + row * DOMINO_SPACING_Y
+            y = 600 + row * DOMINO_SPACING_Y  # Adjusted y-coordinate to draw lower on the screen
             if dom in dominoSet:
                 button = Button(
                     x, y, DOMINO_WIDTH, DOMINO_HEIGHT,
@@ -68,8 +70,8 @@ class HumanPlayer:
                             selected_domino = dom
                             running = False
 
-            # Clear the hand area
-            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X_HAND - 50, 400 - 50, 800, 200))
+            # Clear the hand area using the clear method
+            self.playerHandSurface.clear()
 
             # Draw all dominos in hand
             for button, dom in button_rects:
@@ -101,7 +103,7 @@ class HumanPlayer:
                             selected_trump = i
                             running = False
 
-            screen.fill(WHITE)
+            #screen.fill(WHITE)
 
             # Draw buttons for trump selection
             for i, rect in enumerate(button_rects):
@@ -172,7 +174,8 @@ class HumanPlayer:
                     elif enter_button.collidepoint(event.pos):
                         running = False
 
-            screen.fill(WHITE)
+            self.playerHandSurface.clear()  # Use the clear method
+
             self.draw_hand()
             pass_button.draw(screen)
             up_button.draw(screen)
@@ -188,26 +191,8 @@ class HumanPlayer:
         return bid
 
     def draw_hand(self):
-        font = pygame.font.Font(None, 36)
-        dom_rects = []
-
-        # Clear the hand area
-        pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X_HAND - 50, 400 - 50, 800, 200))
-
-        # Create rects for all dominos in hand
-        for i, dom in enumerate(self.hand):
-            image_path = f"assets/domino_{dom.ID}_{dom.highSide}_{dom.lowSide}.png"
-            image = pygame.image.load(image_path)
-            image = pygame.transform.scale(image, (DOMINO_WIDTH, DOMINO_HEIGHT))  # Scale the image
-            row = i // 4
-            col = i % 4
-            x = MIDDLE_X_HAND + col * DOMINO_SPACING_X
-            y = 400 + row * DOMINO_SPACING_Y
-            dom_rects.append((image, pygame.Rect(x, y, DOMINO_WIDTH, DOMINO_HEIGHT)))
-
-        # Draw all dominos in hand
-        for image, rect in dom_rects:
-            screen.blit(image, rect)
+        self.playerHandSurface.draw(self.hand)
+        screen.blit(self.playerHandSurface.surface, (0, 1080))  # Adjusted y-coordinate to draw lower on the screen
 
 
 class ComputerPlayer:

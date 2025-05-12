@@ -21,8 +21,6 @@ class Game:
         self.font = pygame.font.Font(None, 25)  # Initialize font
         self.click = False
         self.surfaceManager = SurfaceManager(screen)
-        
-        
 
     def run(self):
         running = True
@@ -30,10 +28,14 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
 
             
             if self.state != GameState.QUIT:
-                screen.fill(WHITE)
+                #screen.fill((0, 0, 0, 0))
+                pass
             
             if self.state == GameState.MAIN_MENU:
                 self.main_menu()
@@ -47,15 +49,16 @@ class Game:
                 self.state = GameState.PLAYING
 
             elif self.state == GameState.PLAYING:
-                self.playing_phase()
-                self.state = GameState.GAME_OVER
+                running = False
+                #self.playing_phase()
+                #self.state = GameState.GAME_OVER
 
             elif self.state == GameState.GAME_OVER:
                 self.game_over()
             elif self.state == GameState.QUIT:
                 running = False
 
-            self.draw_ui_elements()
+            #self.draw_ui_elements()
             self.surfaceManager.draw_all(
                 self.players[self.current_player_index].hand,
                 self.trick.trick,
@@ -70,7 +73,7 @@ class Game:
     def draw_ui_elements(self):
         # Drawing logic for UI elements
         self.surfaceManager.uiSurface.draw(self.teamOneScore, self.teamTwoScore)
-        self.screen.blit(self.surfaceManager.uiSurface.surface, (0, 0))
+        screen.blit(self.surfaceManager.uiSurface.surface, (0, 0))
 
     def draw_text(self, text, font, color, surface, x, y):
         textobj = font.render(text, 1, color)
@@ -84,11 +87,11 @@ class Game:
         while running:
             screen.fill((0,0,0))
 
-            self.draw_text("42 Domino Game", self.font, (255, 255, 255), screen,  400, 100)
+            self.draw_text("42 Domino Game", self.font, (255, 255, 255), screen, screen_width // 2, 100)
 
             mx, my = pygame.mouse.get_pos()
-            button_start = pygame.Rect(300, 200, 200, 50)
-            button_quit = pygame.Rect(300, 300, 200, 50)
+            button_start = pygame.Rect(screen_width // 2 - 100, screen_height // 2 - 50, 200, 50)
+            button_quit = pygame.Rect(screen_width // 2 - 100, screen_height // 2 + 50, 200, 50)
 
             if button_start.collidepoint((mx, my)):
                 if self.click:
@@ -100,9 +103,9 @@ class Game:
                     running = False
             
             pygame.draw.rect(screen, (0, 0 ,255), button_start)
-            self.draw_text('Start', self.font, (255, 255, 255), screen, 400, 225)
+            self.draw_text('Start', self.font, (255, 255, 255), screen, screen_width // 2, screen_height // 2 - 25)
             pygame.draw.rect(screen, (255, 0 , 0), button_quit)
-            self.draw_text('Quit', self.font, (255, 255, 255), screen, 400, 325)
+            self.draw_text('Quit', self.font, (255, 255, 255), screen, screen_width // 2, screen_height // 2 + 75)
 
             self.click = False
             for event in pygame.event.get():
@@ -150,7 +153,7 @@ class Game:
             player = self.players[player_index]
 
             # Draw the title "Bidding Phase"
-            screen.fill(WHITE, pygame.Rect(0, 0, screen_width, 100))
+            # screen.fill(WHITE, pygame.Rect(0, 0, screen_width, 100))
             text = font.render("Bidding Phase", True, BLACK)
             screen.blit(text, (screen_width // 2 - text.get_width() // 2, 50))
             
@@ -250,7 +253,7 @@ class Game:
                 self.current_player_index = (self.current_player_index + 1) % 4
 
                 # Draw the played domino on the screen
-                self.draw_played_domino(domino, self.trick.playerIndex[-1])
+                self.surfaceManager.playingSurface.draw_played_domino(domino, self.trick.playerIndex[-1])
 
                 # Wait for a short period to show the played domino
                 pygame.time.wait(500)  # Adjust this value to change the delay (500 milliseconds = 0.5 seconds)
@@ -289,7 +292,7 @@ class Game:
             self.trick.trick = []
 
             # Clear the middle area
-            pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X-150, MIDDLE_Y-100, 500, 250))
+            # pygame.draw.rect(screen, WHITE, pygame.Rect(MIDDLE_X-150, MIDDLE_Y-100, 500, 250))
             pygame.display.flip()
             # Draw the current teams' tricks
             self.draw_teams_tricks()
@@ -323,24 +326,3 @@ class Game:
                 text = self.font.render(f"[{dom.highSide}/{dom.lowSide}]", True, BLACK)
                 screen.blit(text, (screen_width - 250 + i * 50, y_offset))  # Reduced horizontal spacing
             y_offset += 50  # Adjust spacing between tricks
-
-    def draw_played_domino(self, current_domino, player_index):
-        font = pygame.font.Font(None, 36)
-
-        # Draw the current domino in the correct player position
-        positions = [
-            (MIDDLE_X - DOMINO_SPACING_X, MIDDLE_Y),  # Player 1 (Left)
-            (MIDDLE_X, MIDDLE_Y - DOMINO_SPACING_Y),  # Player 2 (Centered above)
-            (MIDDLE_X + DOMINO_SPACING_X, MIDDLE_Y),  # Player 3 (Right)
-            (MIDDLE_X, MIDDLE_Y + DOMINO_SPACING_Y)   # Player 4 (Centered below)
-        ]
-        x, y = positions[player_index]
-        image_path = f"assets/domino_{current_domino.ID}_{current_domino.highSide}_{current_domino.lowSide}.png"
-        image = pygame.image.load(image_path)
-        image = pygame.transform.scale(image, (DOMINO_WIDTH, DOMINO_HEIGHT))  # Scale the image
-        screen.blit(image, (x, y))
-
-        self.surfaceManager.playingSurface.draw(self.trick.trick)
-        self.screen.blit(self.surfaceManager.playingSurface.surface, (0, 100))
-
-        pygame.display.flip()
