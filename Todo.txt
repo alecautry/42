@@ -1,12 +1,10 @@
+# Main game
+# - Update AI logic
+# - Make the bidding system better
+# - Clean up the print statments to make the game play able
 
 
-Finish moving functions.py to stateMachine.py
-
-Move "main" code from stateMachine.py to main.py
-
-clean up code
-
-
-Need to work on staet transitions so the while loop can handle everything
-Next is to create bidding menu for human to pick
-
+# Future Feature ideas
+# - Multiplayer
+# - Add graphics
+# - use real AI models to make the AI good
